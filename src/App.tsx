@@ -6,6 +6,7 @@ import Auth from './Auth';
 import TopHeader from './components/TopHeader';
 import MapControls from './components/MapControls';
 import BottomNav from './components/BottomNav';
+import FeedScreen from './components/FeedScreen';
 import type { FloodReport } from './type';
 
 import cameraIcon from "./assets/camera-01.svg";
@@ -72,6 +73,7 @@ export default function App() {
   const [confirmStep, setConfirmStep] = useState<ConfirmStep>('initial');
   const [userAddedPhoto, setUserAddedPhoto] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showReportPostedToast, setShowReportPostedToast] = useState<boolean>(false);
 
   const [mainSearchQuery, setMainSearchQuery] = useState('');
   const [displayedLocation, setDisplayedLocation] = useState('Locating...');
@@ -444,6 +446,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
     setIsSubmitting(false); setDescription(''); setCapturedImages([]); setIsReporting(false);
     setIsManualLocation(false); setReportingStage('form'); setSearchQuery(''); setCurrentTab('maps');
     setNewWaterLevel(null);
+    // Show the "Report posted" notification
+    setShowReportPostedToast(true);
+    setTimeout(() => setShowReportPostedToast(false), 4000);
   };
 
   const handleInitiateConfirm = () => {
@@ -544,14 +549,26 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         <MapControls handleRecenterLocation={handleRecenterLocation} />
       )}
 
+      {currentTab === 'feed' && !isReporting && (
+        <FeedScreen
+          reports={reports}
+          mainSearchQuery={mainSearchQuery}
+          setMainSearchQuery={setMainSearchQuery}
+          handleMainSearchSubmit={handleMainSearchSubmit}
+          currentUser={currentUser}
+        />
+      )}
+
       <div style={{ position: 'relative', zIndex: 3, pointerEvents: 'none', width: '100%', height: '100%' }}>
         
-        <TopHeader 
-          isReporting={isReporting} reportingStage={reportingStage} setIsReporting={setIsReporting} 
-          setCapturedImages={setCapturedImages} setCurrentTab={setCurrentTab} setReportingStage={setReportingStage}
-          handleMainSearchSubmit={handleMainSearchSubmit} displayedLocation={displayedLocation}
-          mainSearchQuery={mainSearchQuery} setMainSearchQuery={setMainSearchQuery} currentUser={currentUser} getUserInitials={getUserInitials}
-        />
+        {currentTab !== 'feed' && (
+          <TopHeader 
+            isReporting={isReporting} reportingStage={reportingStage} setIsReporting={setIsReporting} 
+            setCapturedImages={setCapturedImages} setCurrentTab={setCurrentTab} setReportingStage={setReportingStage}
+            handleMainSearchSubmit={handleMainSearchSubmit} displayedLocation={displayedLocation}
+            mainSearchQuery={mainSearchQuery} setMainSearchQuery={setMainSearchQuery} currentUser={currentUser} getUserInitials={getUserInitials}
+          />
+        )}
 
         {currentTab === 'profile' && !isReporting && (
           <div className="slide-up-panel" style={{ pointerEvents: 'auto', bottom: '80px', maxHeight: '75vh', overflowY: 'auto' }}>
@@ -607,6 +624,62 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             }}
           >
             {toastMessage}
+          </div>
+        )}
+
+        {/* Report Posted Notification */}
+        {showReportPostedToast && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '105px',
+              left: '16px',
+              right: '16px',
+              backgroundColor: '#0D2B4E',
+              borderRadius: '20px',
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
+              zIndex: 25,
+              pointerEvents: 'auto',
+              animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+            }}
+          >
+            <style>{`
+              @keyframes reportToastIn {
+                from { opacity: 0; transform: translateY(24px) scale(0.97); }
+                to   { opacity: 1; transform: translateY(0) scale(1); }
+              }
+            `}</style>
+            <div>
+              <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
+                Report posted
+              </p>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', fontWeight: '400', color: 'rgba(255,255,255,0.75)', lineHeight: '1.45' }}>
+                Now visible in the Feed, unverified until 3 confirmations
+              </p>
+            </div>
+            {/* Badge verified icon */}
+            <div style={{ flexShrink: 0 }}>
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
+                  stroke="rgba(255,255,255,0.55)"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M11.5 16l3 3 6-6"
+                  stroke="rgba(255,255,255,0.55)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
           </div>
         )}
 
