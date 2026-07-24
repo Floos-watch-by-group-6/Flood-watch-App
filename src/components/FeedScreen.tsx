@@ -35,16 +35,16 @@ function timeAgo(createdAt: number): string {
 function severityLabel(level: 'Low' | 'Medium' | 'High'): string {
   switch (level) {
     case 'High': return 'High Severity';
-    case 'Medium': return 'Med Severity';
+    case 'Medium': return 'Medium Severity';
     case 'Low': return 'Low Severity';
   }
 }
 
 function severityColors(level: 'Low' | 'Medium' | 'High'): { bg: string; text: string } {
   switch (level) {
-    case 'High': return { bg: '#FDECEA', text: '#C62828' };
-    case 'Medium': return { bg: '#FFF3E0', text: '#E65100' };
-    case 'Low': return { bg: '#FFFDE7', text: '#F57F17' };
+    case 'High': return { bg: '#FDEBEA', text: '#E5322D' };
+    case 'Medium': return { bg: '#FEF0E1', text: '#E07A1A' };
+    case 'Low': return { bg: '#E8F6EC', text: '#1F9D57' };
   }
 }
 
@@ -58,7 +58,7 @@ function toFeedPosts(reports: FloodReport[]): FeedPost[] {
     locationName: r.locationName,
     severity: r.waterLevel,
     status: r.status,
-    description: "Recovery days hit different when the setup is this clean 🌿😄",
+    description: "Recovery days hit different when the setup is this clean 🌿☀️",
     images: r.images || (r.imageUrl ? [r.imageUrl] : []),
     commentCount: (r.id % 9) + 1,
   }));
@@ -73,10 +73,10 @@ const SAMPLE_POSTS: FeedPost[] = [
     locationName: 'Admiralty Way, Lekki Phase 1',
     severity: 'High',
     status: 'Unverified',
-    description: 'Recovery days hit different when the setup is this clean 🌿😄',
+    description: 'Recovery days hit different when the setup is this clean 🌿☀️',
     images: [
-      'https://images.unsplash.com/photo-1604357209793-fca5dca89f97?w=400&q=80',
-      'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=400&q=80',
+      'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&q=80',
+      'https://images.unsplash.com/photo-1600336153113-d66c79de3e91?w=600&q=80',
     ],
     commentCount: 7,
   },
@@ -87,9 +87,9 @@ const SAMPLE_POSTS: FeedPost[] = [
     locationName: 'Admiralty Way, Lekki Phase 1',
     severity: 'High',
     status: 'Verified',
-    description: 'Recovery days hit different when the setup is this clean 🌿😄',
+    description: 'Recovery days hit different when the setup is this clean 🌿☀️',
     images: [
-      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=700&q=80',
+      'https://images.unsplash.com/photo-1600336153113-d66c79de3e91?w=800&q=80',
     ],
     commentCount: 7,
   },
@@ -100,9 +100,9 @@ const SAMPLE_POSTS: FeedPost[] = [
     locationName: 'Admiralty Way, Lekki Phase 1',
     severity: 'High',
     status: 'Verified',
-    description: 'Recovery days hit different when the setup is this clean 🌿😄',
+    description: 'Recovery days hit different when the setup is this clean 🌿☀️',
     images: [
-      'https://images.unsplash.com/photo-1504751823-c0dfea8c2c1e?w=700&q=80',
+      'https://images.unsplash.com/photo-1504751823-c0dfea8c2c1e?w=800&q=80',
     ],
     commentCount: 7,
   },
@@ -113,7 +113,7 @@ const SAMPLE_POSTS: FeedPost[] = [
     locationName: 'Admiralty Way, Lekki Phase 1',
     severity: 'High',
     status: 'Verified',
-    description: 'Recovery days hit different when the setup is this clean 🌿😄',
+    description: 'Recovery days hit different when the setup is this clean 🌿☀️',
     images: [],
     commentCount: 7,
   },
@@ -126,211 +126,177 @@ export default function FeedScreen({
   handleMainSearchSubmit,
   currentUser,
 }: FeedScreenProps) {
-  const [searchFocused, setSearchFocused] = useState(false);
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
 
-  // Merge real reports with sample posts (real posts first)
-  const realPosts = toFeedPosts(reports);
+  // Merge real reports with sample posts (real posts first, most recently reported first)
+  const realPosts = toFeedPosts([...reports].sort((a, b) => b.createdAt - a.createdAt));
   const allPosts: FeedPost[] = [...realPosts, ...SAMPLE_POSTS];
 
   return (
     <>
-    <div style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: '#FFFFFF',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      overflowY: 'auto',
-      zIndex: 2,
-    }}>
-      {/* Header */}
       <div style={{
-        position: 'sticky',
+        position: 'absolute',
         top: 0,
-        backgroundColor: '#FFFFFF',
-        zIndex: 10,
-        padding: '52px 16px 12px 16px',
-        borderBottom: '1px solid #F3F4F6',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#F4F5F6',
+        display: 'flex',
+        flexDirection: 'column',
+        fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        overflowY: 'auto',
+        zIndex: 2,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Logo */}
-          <div style={{ flexShrink: 0 }}>
-            <img
-              src="/src/assets/Floodwatchlogo.svg"
-              alt="Floodwatch"
-              width={36}
-              height={36}
-              style={{ display: 'block' }}
-            />
-          </div>
-
-          {/* Search Bar */}
-          <form
-            onSubmit={handleMainSearchSubmit}
-            style={{ flex: 1 }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#F5F5F5',
-              borderRadius: '50px',
-              padding: '9px 16px',
-              border: searchFocused ? '1.5px solid #003366' : '1.5px solid transparent',
-              transition: 'border-color 0.2s',
-            }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search a street or area"
-                value={mainSearchQuery}
-                onChange={(e) => setMainSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  fontSize: '14px',
-                  color: '#111827',
-                  flex: 1,
-                  fontFamily: 'inherit',
-                }}
+        {/* Header */}
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          backgroundColor: '#F4F5F6',
+          zIndex: 10,
+          padding: '52px 18px 14px 18px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            {/* Logo */}
+            <div style={{ flexShrink: 0 }}>
+              <img
+                src="/src/assets/Floodwatchlogo.svg"
+                alt="Floodwatch"
+                width={42}
+                height={29}
+                style={{ display: 'block' }}
               />
             </div>
-          </form>
+
+            {/* Search Bar */}
+            <form onSubmit={handleMainSearchSubmit} style={{ flex: 1 }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '999px',
+                padding: '15px 20px',
+                boxShadow: '0px 6px 16px rgba(17, 24, 39, 0.06)',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2430" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="7.5" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search a street or area"
+                  value={mainSearchQuery}
+                  onChange={(e) => setMainSearchQuery(e.target.value)}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    outline: 'none',
+                    fontSize: '17px',
+                    fontWeight: 600,
+                    color: '#1F2430',
+                    flex: 1,
+                    fontFamily: 'inherit',
+                    minWidth: 0,
+                  }}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Feed Posts */}
+        <div style={{ flex: 1, padding: '6px 14px 140px 14px' }}>
+          {allPosts.map((post) => (
+            <FeedPostCard key={post.id} post={post} onSelect={() => setSelectedPost(post)} />
+          ))}
         </div>
       </div>
 
-      {/* Feed Posts */}
-      <div style={{ flex: 1, padding: '0 0 140px 0' }}>
-        {allPosts.map((post) => (
-          <FeedPostCard key={post.id} post={post} onSelect={() => setSelectedPost(post)} />
-        ))}
-      </div>
-    </div>
-
-    {/* Post Detail Overlay */}
-    {selectedPost && (
-      <PostDetailScreen
-        post={selectedPost}
-        currentUser={currentUser}
-        onBack={() => setSelectedPost(null)}
-      />
-    )}
-  </>
+      {/* Post Detail Overlay */}
+      {selectedPost && (
+        <PostDetailScreen
+          post={selectedPost}
+          currentUser={currentUser}
+          onBack={() => setSelectedPost(null)}
+        />
+      )}
+    </>
   );
 }
 
 function FeedPostCard({ post, onSelect }: { post: FeedPost; onSelect: () => void }) {
   const sevColors = severityColors(post.severity);
-  const [liked, setLiked] = useState(false);
 
   return (
     <div
       onClick={onSelect}
       style={{
-        padding: '16px 16px 0 16px',
-        borderBottom: '1px solid #F3F4F6',
+        backgroundColor: '#FFFFFF',
+        borderRadius: '24px',
+        padding: '18px 20px',
+        marginBottom: '16px',
+        boxShadow: '0px 6px 20px rgba(17, 24, 39, 0.05)',
         cursor: 'pointer',
       }}
     >
-      {/* User row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-        {/* Avatar */}
-        <div style={{
-          width: '28px',
-          height: '28px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #003366 0%, #1a5fa8 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontSize: '10px',
-          fontWeight: '700',
-          flexShrink: 0,
-        }}>
-          {post.username.slice(0, 2).toUpperCase()}
-        </div>
-        <span style={{ fontSize: '12px', fontWeight: '600', color: '#111827' }}>@{post.username}</span>
-        <span style={{ fontSize: '11px', color: '#9CA3AF' }}>•</span>
-        <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{post.timeAgo}</span>
+      {/* Username row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '15px', fontWeight: 600, color: '#6E6E76' }}>@{post.username}</span>
+        <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
+        <span style={{ fontSize: '15px', color: '#9CA0A8' }}>{post.timeAgo}</span>
       </div>
+
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid #EDEEF0', margin: '14px 0' }} />
 
       {/* Reported at */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '4px',
-        marginBottom: '8px',
-        fontSize: '12px',
-        color: '#374151',
-        fontWeight: '500',
+        gap: '8px',
+        marginBottom: '12px',
+        flexWrap: 'wrap',
       }}>
-        <span style={{ color: '#6B7280', fontWeight: '400' }}>Reported at:</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="#EF4444" style={{ flexShrink: 0 }}>
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-        </svg>
-        <span style={{ fontWeight: '500', color: '#111827' }}>{post.locationName}</span>
+        <span style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>Reported at:</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#1F2430" strokeWidth="1.8" strokeLinejoin="round" />
+            <circle cx="12" cy="9" r="2.5" stroke="#1F2430" strokeWidth="1.8" />
+          </svg>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>{post.locationName}</span>
+        </span>
       </div>
 
       {/* Severity + Status badges */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
         <span style={{
-          fontSize: '10px',
-          fontWeight: '600',
-          padding: '3px 10px',
-          borderRadius: '20px',
+          fontSize: '13px',
+          fontWeight: 600,
+          padding: '5px 12px',
+          borderRadius: '999px',
           backgroundColor: sevColors.bg,
           color: sevColors.text,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
         }}>
-          <span style={{
-            width: '5px',
-            height: '5px',
-            borderRadius: '50%',
-            backgroundColor: sevColors.text,
-            display: 'inline-block',
-          }} />
           {severityLabel(post.severity)}
         </span>
 
         <span style={{
-          fontSize: '10px',
-          fontWeight: '600',
-          padding: '3px 10px',
-          borderRadius: '20px',
-          backgroundColor: post.status === 'Verified' ? '#D1FAE5' : '#F3F4F6',
-          color: post.status === 'Verified' ? '#065F46' : '#6B7280',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
+          fontSize: '13px',
+          fontWeight: 600,
+          padding: '5px 12px',
+          borderRadius: '999px',
+          backgroundColor: post.status === 'Verified' ? '#DCF3E5' : '#EBECEE',
+          color: post.status === 'Verified' ? '#1F9D57' : '#8A8A93',
         }}>
-          {post.status === 'Verified' && (
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="#065F46">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-            </svg>
-          )}
           {post.status}
         </span>
       </div>
 
       {/* Description */}
       <p style={{
-        margin: '0 0 10px 0',
-        fontSize: '13px',
-        color: '#374151',
+        margin: '0 0 14px 0',
+        fontSize: '16px',
+        color: '#8E8E96',
         lineHeight: '1.5',
       }}>
         {post.description}
@@ -341,17 +307,15 @@ function FeedPostCard({ post, onSelect }: { post: FeedPost; onSelect: () => void
         <div style={{
           display: 'grid',
           gridTemplateColumns: post.images.length === 1 ? '1fr' : '1fr 1fr',
-          gap: '6px',
-          marginBottom: '12px',
-          borderRadius: '12px',
-          overflow: 'hidden',
+          gap: '10px',
+          marginBottom: '14px',
         }}>
           {post.images.slice(0, 2).map((img, i) => (
             <div key={i} style={{
-              borderRadius: '10px',
+              borderRadius: '18px',
               overflow: 'hidden',
-              aspectRatio: post.images.length === 1 ? '16/9' : '1/1',
-              backgroundColor: '#F3F4F6',
+              aspectRatio: post.images.length === 1 ? '16 / 10' : '3 / 4',
+              backgroundColor: '#EDEEF0',
             }}>
               <img
                 src={img}
@@ -369,80 +333,29 @@ function FeedPostCard({ post, onSelect }: { post: FeedPost; onSelect: () => void
         </div>
       )}
 
-      {/* Actions row */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        padding: '8px 0 14px 0',
-      }}>
-        {/* Comment count */}
+      {/* Comment chip */}
+      <div>
         <button
-          onClick={() => {}}
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
           style={{
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: '5px',
-            background: 'none',
+            gap: '7px',
+            backgroundColor: '#F1F1F3',
             border: 'none',
+            borderRadius: '14px',
+            padding: '8px 14px',
             cursor: 'pointer',
-            padding: 0,
-            color: '#6B7280',
-            fontSize: '12px',
-            fontWeight: '500',
+            color: '#4B4B57',
+            fontSize: '15px',
+            fontWeight: 500,
+            fontFamily: 'inherit',
           }}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B4B57" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
           {post.commentCount}
-        </button>
-
-        {/* Like */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setLiked(l => !l); }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            color: liked ? '#EF4444' : '#6B7280',
-            fontSize: '12px',
-            fontWeight: '500',
-            transition: 'color 0.2s',
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? '#EF4444' : 'none'} stroke={liked ? '#EF4444' : '#6B7280'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-        </button>
-
-        {/* Share */}
-        <button
-          onClick={(e) => { e.stopPropagation(); }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-            color: '#6B7280',
-            fontSize: '12px',
-            fontWeight: '500',
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-          </svg>
         </button>
       </div>
     </div>

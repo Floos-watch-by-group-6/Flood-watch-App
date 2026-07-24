@@ -1,4 +1,3 @@
-// import { Color } from 'maplibre-gl';
 import { useState } from 'react';
 
 interface MapControlsProps {
@@ -7,168 +6,183 @@ interface MapControlsProps {
 }
 
 const severityLevels = [
-  { color: '#EF4444', label: 'High severity' },
-  { color: '#F97316', label: 'Medium severity' },
-  { color: '#FBBF24', label: 'Low severity' },
+  { color: '#F5322D', label: 'High severity' },
+  { color: '#F59E0B', label: 'Medium severity' },
+  { color: '#FBD268', label: 'Low severity' },
 ];
 
-const statusLevels = [
-  { ringColor: '#9CA3AF', label: 'Verified report: solid ring', filled: true },
-  { ringColor: '#9CA3AF', label: 'Unverified report: pulsing', filled: false},
-  { ringColor: '#D1D5DB', label: 'Likely resolved: faded', faded: true },
+const statusLevels: { emphasis: string; before: string; kind: 'solid' | 'pulsing' | 'faded' }[] = [
+  { before: 'Verified report: ', emphasis: 'solid ring', kind: 'solid' },
+  { before: 'Unverified report: ', emphasis: 'pulsing', kind: 'pulsing' },
+  { before: 'Likely resolved: ', emphasis: 'faded', kind: 'faded' },
 ];
+
+function StatusIndicator({ kind }: { kind: 'solid' | 'pulsing' | 'faded' }) {
+  if (kind === 'solid') {
+    return (
+      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: '11px', height: '11px', borderRadius: '50%', backgroundColor: '#9CA3AF' }} />
+      </div>
+    );
+  }
+  if (kind === 'pulsing') {
+    return (
+      <div style={{ width: '20px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: '#8A8A93' }} />
+      </div>
+    );
+  }
+  return (
+    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #D8DBDF', flexShrink: 0 }} />
+  );
+}
 
 export default function MapControls({ handleRecenterLocation, handleInfoClick }: MapControlsProps) {
   const [showLegend, setShowLegend] = useState(false);
 
   const toggleLegend = () => {
-    setShowLegend(!showLegend);
+    setShowLegend((v) => !v);
     if (handleInfoClick) handleInfoClick();
   };
 
   return (
-    <div 
-      style={{ 
-        position: 'absolute', 
-        right: '46px', 
-        bottom: '150px', 
-        zIndex: 10, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'flex-end',
-        gap: '12px', 
-        pointerEvents: 'auto' 
-      }}
-    >
-      {/* Dynamic Legend Panel Pop-up */}
+    <>
+      {/* Map Key Modal */}
       {showLegend && (
-        <div 
+        <div
+          onClick={() => setShowLegend(false)}
           style={{
-            backgroundColor: '#FFFFFF',
-            borderRadius: '24px', 
-            padding: '10px',
-            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-            width: '160px', 
-            fontFamily: 'system-ui, sans-serif',
-            marginBottom: '0px',
-            position: 'relative',
-            right: '50px',
-            top: '60px',
+            position: 'absolute',
+            inset: 0,
+            zIndex: 40,
+            backgroundColor: 'rgba(0, 0, 0, 0.28)',
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            textAlign: 'left'
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            boxSizing: 'border-box',
+            pointerEvents: 'auto',
           }}
         >
-          {/* Close Button */}
-          <button 
-            onClick={() => setShowLegend(false)}
+          <div
+            onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'absolute',
-              top: '16px',
-              right: '16px',
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              fontSize: '20px',
-              color: '#9CA3AF',
-              lineHeight: 1
+              width: '100%',
+              maxWidth: '320px',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '28px',
+              padding: '28px 26px',
+              boxShadow: '0px 24px 60px rgba(0, 0, 0, 0.22)',
+              fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              boxSizing: 'border-box',
             }}
           >
-            ×
-          </button>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1F2430', margin: '0 0 10px 0', letterSpacing: '-0.01em' }}>Map key</h2>
+            <p style={{ fontSize: '15px', color: '#6B7280', margin: '0 0 24px 0', lineHeight: '1.5' }}>
+              Color always = severity. Ring style always = status.
+            </p>
 
-          <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#111827', margin: '0 0 4px 0' }}>Map key</h2>
-          <p style={{ fontSize: '12px', color: '#6B7280', margin: '0 0 8px 0' }}>Color always = severity. Ring style always = status.</p>
-
-          {/* Severity Section */}
-          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 10px 0' }}>Severity</h3>
-          {severityLevels.map((level) => (
-            <div key={level.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px', fontSize: '11px', color: '#374151' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: level.color, flexShrink: 0 }} />
-              <span>{level.label}</span>
+            {/* Severity */}
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1F2430', margin: '0 0 16px 0' }}>Severity</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {severityLevels.map((level) => (
+                <div key={level.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '14px', height: '14px', borderRadius: '50%', backgroundColor: level.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: '15px', color: '#1F2430' }}>{level.label}</span>
+                </div>
+              ))}
             </div>
-          ))}
 
-          {/* Status Section */}
-          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '16px 0 10px 0' }}>Status</h3>
-          {statusLevels.map((level) => (
-            <div key={level.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px', fontSize: '11px', color: '#374151', opacity: level.faded ? 0.6 : 1 }}>
-              <div style={{ 
-                width: '14px', 
-                height: '14px', 
-                borderRadius: '50%', 
-                border: `2px solid ${level.ringColor}`, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                flexShrink: 0 
-              }}>
-                {level.filled && <div style={{ width: '11px', height: '11px', borderRadius: '50%', backgroundColor: level.ringColor }} />}
+            <div style={{ borderTop: '1px solid #EEF0F2', margin: '20px 0' }} />
+
+            {/* Status */}
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#1F2430', margin: '0 0 16px 0' }}>Status</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {statusLevels.map((level) => (
+                <div key={level.emphasis} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <StatusIndicator kind={level.kind} />
+                  <span style={{ fontSize: '15px', color: '#1F2430' }}>
+                    {level.before}<span style={{ fontWeight: 700 }}>{level.emphasis}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ borderTop: '1px solid #EEF0F2', margin: '20px 0' }} />
+
+            {/* Your location */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#2563EB' }} />
               </div>
-              <span>{level.label}</span>
+              <span style={{ fontSize: '15px', color: '#1F2430' }}>Your location</span>
             </div>
-          ))}
-
-          {/* Your Location Tracker Indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px', fontSize: '13px', color: '#374151' }}>
-            <div style={{ width: '20px', height: '20px', position: 'relative', flexShrink: 0 }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '20px', height: '20px', backgroundColor: '#3B82F6', borderRadius: '50%', opacity: 0.15 }} />
-              <div style={{ position: 'absolute', top: '2px', left: '2px', width: '12px', height: '12px', backgroundColor: '#3B82F6', borderRadius: '50%', border: '2px solid #FFFFFF' }} />
-            </div>
-            <span>Your location</span>
           </div>
         </div>
       )}
 
-      {/* Information (i) Button */}
-      <button 
-        onClick={toggleLegend}
+      <div
         style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          backgroundColor: showLegend ? '#F3F4F6' : '#FFFFFF',
-          border: 'none',
+          position: 'absolute',
+          right: '46px',
+          bottom: '150px',
+          zIndex: 10,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
-          cursor: 'pointer',
-          transition: 'background-color 0.2s ease'
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '12px',
+          pointerEvents: 'auto',
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2937" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-      </button>
+        {/* Information (i) Button */}
+        <button
+          onClick={toggleLegend}
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: showLegend ? '#F3F4F6' : '#FFFFFF',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s ease',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2937" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
 
-      {/* Recenter Location Button */}
-      <button 
-        onClick={handleRecenterLocation}
-        style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '10px',
-          backgroundColor: '#FFFFFF',
-          border: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
-          cursor: 'pointer'
-        }}
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000205" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="8" />
-          <line x1="12" y1="1" x2="12" y2="4" />
-          <line x1="12" y1="20" x2="12" y2="23" />
-          <line x1="1" y1="12" x2="4" y2="12" />
-          <line x1="20" y1="12" x2="23" y2="12" />
-        </svg>
-      </button>
-    </div>
+        {/* Recenter Location Button */}
+        <button
+          onClick={handleRecenterLocation}
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            backgroundColor: '#FFFFFF',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+            cursor: 'pointer',
+          }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000205" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="8" />
+            <line x1="12" y1="1" x2="12" y2="4" />
+            <line x1="12" y1="20" x2="12" y2="23" />
+            <line x1="1" y1="12" x2="4" y2="12" />
+            <line x1="20" y1="12" x2="23" y2="12" />
+          </svg>
+        </button>
+      </div>
+    </>
   );
 }

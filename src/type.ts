@@ -1,6 +1,9 @@
 export interface FloodReport {
   id: number;
   locationName: string;
+  area?: string;
+  description?: string;
+  reportedBy?: string;
   coordinates: [number, number];
   imageUrl: string;
   images?: string[];         // <--- Add this property!

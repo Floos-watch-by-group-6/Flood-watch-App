@@ -5,17 +5,18 @@ import type { TabType } from '../type'; // Adjust import path if needed
 
 interface TopHeaderProps {
   isReporting: boolean;
-  reportingStage: 'form' | 'adjust';
+  reportingStage: 'form' | 'adjust' | 'review';
   setIsReporting: (val: boolean) => void;
   setCapturedImages: React.Dispatch<React.SetStateAction<string[]>>;
   setCurrentTab: (tab: TabType) => void;
-  setReportingStage: (stage: 'form' | 'adjust') => void;
+  setReportingStage: (stage: 'form' | 'adjust' | 'review') => void;
   handleMainSearchSubmit: (e: React.FormEvent) => void;
   displayedLocation: string;
   mainSearchQuery: string;
   setMainSearchQuery: (val: string) => void;
   currentUser: string;
   getUserInitials: (name: string) => string;
+  onOpenWeather: () => void;
 }
 
 export default function TopHeader({
@@ -29,6 +30,7 @@ export default function TopHeader({
   displayedLocation,
   mainSearchQuery,
   setMainSearchQuery,
+  onOpenWeather,
 //   currentUser,
 //   getUserInitials
 }: TopHeaderProps) {
@@ -137,8 +139,8 @@ export default function TopHeader({
         </div>
       </form>
 
-      <button 
-        onClick={() => setCurrentTab('profile')}
+      <button
+        onClick={onOpenWeather}
         style={{
           width: '40px',
           height: '40px',
