@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Auth.css';
 import floodwatchLogo from './assets/Floodwatchlogo.svg';
 import splashIcon from './assets/Frame 2147229111.svg';
+import { supabase } from './lib/supabaseClient';
 
 interface AuthProps {
   onAuthComplete: (username: string, isNewSignup?: boolean) => void;
@@ -20,6 +21,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const [emailError, setEmailError] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Sign Up Form States
   const [signUpUsername, setSignUpUsername] = useState('');
@@ -28,9 +30,15 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+  const [signUpError, setSignUpError] = useState('');
 
   // OTP Verification State
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpError, setOtpError] = useState('');
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   // Sequenced splash animation: icon alone -> divider grows in -> wordmark fades in -> hand off to sign in
   useEffect(() => {
@@ -83,15 +91,27 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   })();
 
   // Handle Login Submission
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address.');
       return;
     }
     setEmailError('');
-    const cleanUsername = email.split('@')[0];
-    onAuthComplete(cleanUsername || 'user');
+    setIsSigningIn(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: signInPassword,
+    });
+    setIsSigningIn(false);
+
+    if (error) {
+      setEmailError(error.message);
+      return;
+    }
+
+    const username = (data.user?.user_metadata?.username as string) || email.split('@')[0];
+    onAuthComplete(username || 'user');
   };
 
   // Handle Step 1 Submission
@@ -108,6 +128,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   // Handle OTP digit changes
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(-1);
+    if (otpError) setOtpError('');
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -119,9 +140,61 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     }
   };
 
-  const handleVerifyOtp = () => {
-    const cleanUsername = signUpUsername.trim().toLowerCase().replace(/\s+/g, '_');
-    onAuthComplete(cleanUsername || 'user', true);
+  // Create the account and trigger the verification email
+  const handleCreateAccount = async () => {
+    setSignUpError('');
+    setIsCreatingAccount(true);
+    const { error } = await supabase.auth.signUp({
+      email: signUpEmail.trim(),
+      password: signUpPassword,
+      options: {
+        data: { username: signUpUsername.trim() },
+      },
+    });
+    setIsCreatingAccount(false);
+
+    if (error) {
+      setSignUpError(error.message);
+      return;
+    }
+
+    setSignUpSubStep('otp');
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpError('');
+    setIsVerifyingOtp(true);
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: signUpEmail.trim(),
+      token: otp.join(''),
+      type: 'signup',
+    });
+    setIsVerifyingOtp(false);
+
+    if (error) {
+      setOtpError(error.message);
+      return;
+    }
+
+    const username = (data.user?.user_metadata?.username as string) || signUpUsername.trim() || 'user';
+    onAuthComplete(username, true);
+  };
+
+  const handleResendOtp = async () => {
+    setOtpError('');
+    setResendMessage('');
+    setIsResendingOtp(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: signUpEmail.trim(),
+    });
+    setIsResendingOtp(false);
+
+    if (error) {
+      setOtpError(error.message);
+      return;
+    }
+    setResendMessage('A new code has been sent.');
   };
 
   return (
@@ -477,7 +550,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
 
                 <button
                   type="submit"
-                  disabled={!isSignInActive}
+                  disabled={!isSignInActive || isSigningIn}
                   style={{
                     width: '100%',
                     padding: '17px',
@@ -487,12 +560,12 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     border: 'none',
                     fontWeight: '700',
                     fontSize: '17px',
-                    cursor: isSignInActive ? 'pointer' : 'not-allowed',
+                    cursor: isSignInActive && !isSigningIn ? 'pointer' : 'not-allowed',
                     marginTop: '10px',
                     transition: 'background-color 0.25s ease, cursor 0.25s ease'
                   }}
                 >
-                  Sign in
+                  {isSigningIn ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
             </div>
@@ -982,10 +1055,16 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     </span>
                   </label>
 
+                  {signUpError && (
+                    <p style={{ fontSize: '13px', color: '#EF4444', marginBottom: '16px', textAlign: 'center' }}>
+                      {signUpError}
+                    </p>
+                  )}
+
                   <button
                     type="button"
-                    disabled={!agreedToTerms}
-                    onClick={() => setSignUpSubStep('otp')}
+                    disabled={!agreedToTerms || isCreatingAccount}
+                    onClick={handleCreateAccount}
                     style={{
                       width: '100%',
                       padding: '17px',
@@ -995,11 +1074,11 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       border: 'none',
                       fontWeight: '700',
                       fontSize: '17px',
-                      cursor: agreedToTerms ? 'pointer' : 'not-allowed',
+                      cursor: agreedToTerms && !isCreatingAccount ? 'pointer' : 'not-allowed',
                       transition: 'background-color 0.25s ease'
                     }}
                   >
-                    Create account
+                    {isCreatingAccount ? 'Creating account...' : 'Create account'}
                   </button>
                 </div>
               )}
@@ -1068,12 +1147,15 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     ))}
                   </div>
 
-                  <div style={{ textAlign: 'center', fontSize: '16px', color: '#374151', marginBottom: '32px' }}>
-                    OTP expires in 00:48
-                  </div>
+                  {otpError && (
+                    <p style={{ textAlign: 'center', fontSize: '13px', color: '#EF4444', marginBottom: '16px' }}>
+                      {otpError}
+                    </p>
+                  )}
 
                   <button
                     type="button"
+                    disabled={!otp.every(d => d !== '') || isVerifyingOtp}
                     onClick={handleVerifyOtp}
                     style={{
                       width: '100%',
@@ -1084,22 +1166,37 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       border: 'none',
                       fontWeight: '700',
                       fontSize: '17px',
-                      cursor: 'pointer',
+                      cursor: otp.every(d => d !== '') && !isVerifyingOtp ? 'pointer' : 'not-allowed',
                       marginBottom: '28px',
                       transition: 'background-color 0.25s ease'
                     }}
                   >
-                    Verify Code
+                    {isVerifyingOtp ? 'Verifying...' : 'Verify Code'}
                   </button>
 
                   <p style={{ textAlign: 'center', fontSize: '15px', color: '#9CA3AF', margin: '0 0 10px 0' }}>
                     Didn't receive OTP?
                   </p>
                   <p style={{ textAlign: 'center', margin: 0 }}>
-                    <span style={{ color: '#091b29', fontWeight: '700', fontSize: '16px', cursor: 'pointer', textDecoration: 'underline' }}>
-                      Resend code
+                    <span
+                      onClick={isResendingOtp ? undefined : handleResendOtp}
+                      style={{
+                        color: '#091b29',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        cursor: isResendingOtp ? 'default' : 'pointer',
+                        textDecoration: 'underline',
+                        opacity: isResendingOtp ? 0.6 : 1,
+                      }}
+                    >
+                      {isResendingOtp ? 'Resending...' : 'Resend code'}
                     </span>
                   </p>
+                  {resendMessage && (
+                    <p style={{ textAlign: 'center', fontSize: '13px', color: '#16A34A', margin: '10px 0 0 0' }}>
+                      {resendMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
