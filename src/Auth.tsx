@@ -617,21 +617,6 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               {/* Top Navigation & Step Indicator Header */}
               {signUpSubStep !== 'otp' && (
                 <div style={{ position: 'relative', marginBottom: '36px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      backgroundColor: '#111827',
-                      WebkitMaskImage: `url("${floodwatchLogo}")`,
-                      maskImage: `url("${floodwatchLogo}")`,
-                      WebkitMaskSize: 'contain',
-                      maskSize: 'contain',
-                      WebkitMaskRepeat: 'no-repeat',
-                      maskRepeat: 'no-repeat',
-                      WebkitMaskPosition: 'center',
-                      maskPosition: 'center',
-                    }} />
-                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <button
                       type="button"
