@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './Auth.css';
 import floodwatchLogo from './assets/Floodwatchlogo.svg';
 import splashIcon from './assets/Frame 2147229111.svg';
-import { supabase } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
+
+const CONFIG_ERROR_MESSAGE = 'Sign-in is not configured yet. Please contact the developer.';
 
 interface AuthProps {
   onAuthComplete: (username: string, isNewSignup?: boolean) => void;
@@ -97,6 +99,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
       setEmailError('Please enter a valid email address.');
       return;
     }
+    if (!isSupabaseConfigured) {
+      setEmailError(CONFIG_ERROR_MESSAGE);
+      return;
+    }
     setEmailError('');
     setIsSigningIn(true);
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -142,6 +148,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
 
   // Create the account and trigger the verification email
   const handleCreateAccount = async () => {
+    if (!isSupabaseConfigured) {
+      setSignUpError(CONFIG_ERROR_MESSAGE);
+      return;
+    }
     setSignUpError('');
     setIsCreatingAccount(true);
     const { error } = await supabase.auth.signUp({
@@ -162,6 +172,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   };
 
   const handleVerifyOtp = async () => {
+    if (!isSupabaseConfigured) {
+      setOtpError(CONFIG_ERROR_MESSAGE);
+      return;
+    }
     setOtpError('');
     setIsVerifyingOtp(true);
     const { data, error } = await supabase.auth.verifyOtp({
@@ -181,6 +195,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   };
 
   const handleResendOtp = async () => {
+    if (!isSupabaseConfigured) {
+      setOtpError(CONFIG_ERROR_MESSAGE);
+      return;
+    }
     setOtpError('');
     setResendMessage('');
     setIsResendingOtp(true);
