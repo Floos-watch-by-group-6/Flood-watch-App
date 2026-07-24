@@ -703,15 +703,14 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
   if (!isAuthenticated) return <Auth onAuthComplete={handleAuthComplete} />;
 
   return (
-    <div style={{
+    <div className="mobile-frame-viewport" style={{
       width: '100vw',
-      height: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#091b29',
     }}>
-    <main style={{ position: 'relative', width: '100%', maxWidth: '402px', height: '100%', maxHeight: '874px', overflow: 'hidden' }}>
+    <main className="mobile-frame" style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       <input type="file" accept="image/*" capture="environment" ref={fileInputRef} style={{ display: 'none' }} onChange={handleCameraCapture} />
       <input type="file" accept="image/*" capture="environment" ref={confirmFileInputRef} style={{ display: 'none' }} onChange={handleConfirmPhotoCaptured} />
 

@@ -136,12 +136,11 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   };
 
   return (
-    <div style={{
-      width: '100vw', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
+    <div className="mobile-frame-viewport" style={{
+      width: '100vw',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       backgroundColor: '#091b29',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
@@ -170,11 +169,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
         }
       `}</style>
 
-      <div style={{ 
-        width: '100%', 
-        maxWidth: '402px', 
+      <div className="mobile-frame mobile-frame-card" style={{
+        width: '100%',
         height: '100%',
-        maxHeight: '874px',
         backgroundColor: '#FFFFFF',
         borderRadius: '24px',
         display: 'flex',

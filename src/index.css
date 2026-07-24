@@ -26,6 +26,33 @@ html, body, #root {
   height: 100%;
   background-color: #121212;
 }
+
+/* iOS Safari's address bar shrinks the visible viewport without resizing
+   100vh, cutting off content at the bottom. 100dvh tracks what's actually
+   visible; the plain 100vh above is the fallback for browsers without it. */
+.mobile-frame-viewport {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* On an actual phone (any size), the app fills the whole screen. The
+   402x874 cap only kicks in on wider screens, giving desktop browsers
+   the centered phone-mockup look instead of a full-bleed stretched app. */
+.mobile-frame {
+  max-width: 402px;
+  max-height: 874px;
+}
+
+@media (max-width: 480px) {
+  .mobile-frame {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .mobile-frame-card {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
 body{
    font-family: "Euclid", sans-serif;
 }
