@@ -16,15 +16,15 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const [signUpSubStep, setSignUpSubStep] = useState<SignUpSubStep>(1);
 
   // Sign In Form States
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Sign Up Form States
   const [signUpUsername, setSignUpUsername] = useState('');
-  const [signUpPhone, setSignUpPhone] = useState('');
-  const [signUpPhoneError, setSignUpPhoneError] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpEmailError, setSignUpEmailError] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -48,103 +48,60 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     };
   }, [step]);
 
-  // Real-time phone input handler for Sign In
-  const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value;
-
-    if (phoneError) setPhoneError('');
-
-    if (!val) {
-      setPhoneNumber('');
-      return;
-    }
-
-    const hasPlus = val.startsWith('+');
-    val = val.replace(/[^0-9]/g, '');
-    if (hasPlus) val = '+' + val;
-
-    if (val.startsWith('+234')) {
-      if (val.length > 14) val = val.slice(0, 14);
-    } else if (val.startsWith('0')) {
-      if (val.length > 11) val = val.slice(0, 11);
-    } else if (val.startsWith('+')) {
-      if (!'+234'.startsWith(val)) return;
-    } else {
-      if (val.length > 10) val = val.slice(0, 10);
-    }
-
-    setPhoneNumber(val);
+  // Email input handler for Sign In
+  const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (emailError) setEmailError('');
+    setEmail(e.target.value);
   };
 
-  // Real-time phone input handler for Sign Up
-  const handleSignUpPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value;
-
-    if (signUpPhoneError) setSignUpPhoneError('');
-
-    if (!val) {
-      setSignUpPhone('');
-      return;
-    }
-
-    const hasPlus = val.startsWith('+');
-    val = val.replace(/[^0-9]/g, '');
-    if (hasPlus) val = '+' + val;
-
-    if (val.startsWith('+234')) {
-      if (val.length > 14) val = val.slice(0, 14);
-    } else if (val.startsWith('0')) {
-      if (val.length > 11) val = val.slice(0, 11);
-    } else if (val.startsWith('+')) {
-      if (!'+234'.startsWith(val)) return;
-    } else {
-      if (val.length > 10) val = val.slice(0, 10);
-    }
-
-    setSignUpPhone(val);
+  // Email input handler for Sign Up
+  const handleSignUpEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (signUpEmailError) setSignUpEmailError('');
+    setSignUpEmail(e.target.value);
   };
 
   // Format validation helper
-  const validatePhoneNumber = (val: string) => {
-    const clean = val.trim();
-    const ngFormat = /^0\d{10}$/;        
-    const intlFormat = /^\+234\d{10}$/;  
-    return ngFormat.test(clean) || intlFormat.test(clean);
+  const validateEmail = (val: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
   };
 
   // Active status checks
   const isSignInActive = signInPassword.length >= 8;
-  const isStep1Valid = signUpUsername.trim().length > 0 && signUpPhone.length >= 10;
-  
+  const isStep1Valid = signUpUsername.trim().length > 0 && validateEmail(signUpEmail);
+
   // Password criteria check
   const hasMinLength = signUpPassword.length >= 8;
   const hasUppercase = /[A-Z]/.test(signUpPassword);
   const hasNumber = /[0-9]/.test(signUpPassword);
   const isStep2Valid = hasMinLength && hasUppercase && hasNumber;
 
-  // Mask Phone for OTP Screen
-  const maskedPhone = signUpPhone ? signUpPhone.slice(0, 6) + '****' + signUpPhone.slice(-2) : '+234 80****78';
+  // Mask Email for OTP Screen
+  const maskedEmail = (() => {
+    const [localPart, domain] = signUpEmail.split('@');
+    if (!localPart || !domain) return 'jo****@example.com';
+    return localPart.slice(0, 2) + '****@' + domain;
+  })();
 
   // Handle Login Submission
   const handleSignInSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePhoneNumber(phoneNumber)) {
-      setPhoneError('Please enter 10 digits after 0 or +234.');
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address.');
       return;
     }
-    setPhoneError('');
-    const cleanUsername = phoneNumber.replace(/[^0-9]/g, '').slice(-10);
+    setEmailError('');
+    const cleanUsername = email.split('@')[0];
     onAuthComplete(cleanUsername || 'user');
   };
 
   // Handle Step 1 Submission
   const handleStep1Next = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validatePhoneNumber(signUpPhone)) {
-      setSignUpPhoneError('Please enter 10 digits after 0 or +234.');
+    if (!validateEmail(signUpEmail)) {
+      setSignUpEmailError('Please enter a valid email address.');
       return;
     }
-    setSignUpPhoneError('');
+    setSignUpEmailError('');
     setSignUpSubStep(2);
   };
 
@@ -427,19 +384,19 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               <form onSubmit={handleSignInSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '26px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '17px', color: '#111827', marginBottom: '10px', fontWeight: '700' }}>
-                    Phone Number
+                    Email
                   </label>
                   <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={handlePhoneInputChange}
-                    placeholder="+234 801 234 5678"
+                    type="email"
+                    value={email}
+                    onChange={handleEmailInputChange}
+                    placeholder="you@example.com"
                     required
                     style={{
                       width: '100%',
                       padding: '16px 20px',
                       borderRadius: '26px',
-                      border: phoneError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
+                      border: emailError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
                       backgroundColor: '#FFFFFF',
                       fontSize: '16px',
                       color: '#111827',
@@ -448,9 +405,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       fontFamily: 'inherit',
                     }}
                   />
-                  {phoneError && (
+                  {emailError && (
                     <span style={{ fontSize: '12px', color: '#EF4444', marginTop: '6px', display: 'block' }}>
-                      {phoneError}
+                      {emailError}
                     </span>
                   )}
                 </div>
@@ -692,19 +649,19 @@ export default function Auth({ onAuthComplete }: AuthProps) {
 
                     <div>
                       <label style={{ display: 'block', fontSize: '17px', color: '#111827', marginBottom: '10px', fontWeight: '700' }}>
-                        Phone Number
+                        Email
                       </label>
                       <input
-                        type="tel"
-                        placeholder="+234 801 234 5678"
+                        type="email"
+                        placeholder="you@example.com"
                         required
-                        value={signUpPhone}
-                        onChange={handleSignUpPhoneChange}
+                        value={signUpEmail}
+                        onChange={handleSignUpEmailChange}
                         style={{
                           width: '100%',
                           padding: '16px 20px',
                           borderRadius: '26px',
-                          border: signUpPhoneError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
+                          border: signUpEmailError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
                           backgroundColor: '#FFFFFF',
                           fontSize: '16px',
                           color: '#111827',
@@ -716,9 +673,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       <span style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '8px', display: 'block' }}>
                         Used to log in and receive OTP codes
                       </span>
-                      {signUpPhoneError && (
+                      {signUpEmailError && (
                         <span style={{ fontSize: '12px', color: '#EF4444', marginTop: '4px', display: 'block' }}>
-                          {signUpPhoneError}
+                          {signUpEmailError}
                         </span>
                       )}
                     </div>
@@ -961,15 +918,15 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       </button>
                     </div>
 
-                    {/* Phone Review */}
+                    {/* Email Review */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: '1.5px solid #E5E7EB', borderRadius: '18px', backgroundColor: '#FFFFFF' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                         <div style={{ width: '44px', height: '44px', borderRadius: '50%', backgroundColor: '#091b29', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', flexShrink: 0 }}>
-                          <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                          <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l9 7 9-7"/></svg>
                         </div>
                         <div>
-                          <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Phone Number</div>
-                          <div style={{ fontSize: '17px', fontWeight: '700', color: '#111827', marginTop: '2px' }}>{signUpPhone || '+234 801 234 5678'}</div>
+                          <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Email</div>
+                          <div style={{ fontSize: '17px', fontWeight: '700', color: '#111827', marginTop: '2px' }}>{signUpEmail || 'you@example.com'}</div>
                         </div>
                       </div>
                       <button onClick={() => setSignUpSubStep(1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#091b29', padding: 0, display: 'flex', flexShrink: 0 }}>
@@ -1079,7 +1036,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     </h3>
                     <p style={{ fontSize: '16px', color: '#9CA3AF', margin: 0, lineHeight: '1.4' }}>
                       We sent you a verification code to<br />
-                      {maskedPhone}
+                      {maskedEmail}
                     </p>
                   </div>
 
