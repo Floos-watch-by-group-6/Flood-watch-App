@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Auth.css';
 import floodwatchLogo from './assets/Floodwatchlogo.svg';
+import splashIcon from './assets/Frame 2147229111.svg';
 
 interface AuthProps {
   onAuthComplete: (username: string, isNewSignup?: boolean) => void;
@@ -260,41 +261,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   flexShrink: 0,
                 }}
               >
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: '#FFFFFF',
-                  WebkitMaskImage: `url(${floodwatchLogo})`,
-                  maskImage: `url(${floodwatchLogo})`,
-                  WebkitMaskSize: 'contain',
-                  maskSize: 'contain',
-                  WebkitMaskRepeat: 'no-repeat',
-                  maskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskPosition: 'center',
-                }} />
-
-                <div className="eyeball-dot-left" style={{
-                  position: 'absolute',
-                  top: '44%',
-                  left: '35%',
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  backgroundColor: '#091b29',
-                  pointerEvents: 'none'
-                }} />
-
-                <div className="eyeball-dot-right" style={{
-                  position: 'absolute',
-                  top: '44%',
-                  right: '35%',
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  backgroundColor: '#091b29',
-                  pointerEvents: 'none'
-                }} />
+                <img src={splashIcon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
 
               <div
@@ -361,8 +328,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                 width: '36px',
                 height: '36px',
                 backgroundColor: '#FFFFFF',
-                WebkitMaskImage: `url(${floodwatchLogo})`,
-                maskImage: `url(${floodwatchLogo})`,
+                WebkitMaskImage: `url("${floodwatchLogo}")`,
+                maskImage: `url("${floodwatchLogo}")`,
                 WebkitMaskSize: 'contain',
                 maskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',
@@ -435,8 +402,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   width: '46px',
                   height: '46px',
                   backgroundColor: '#111827',
-                  WebkitMaskImage: `url(${floodwatchLogo})`,
-                  maskImage: `url(${floodwatchLogo})`,
+                  WebkitMaskImage: `url("${floodwatchLogo}")`,
+                  maskImage: `url("${floodwatchLogo}")`,
                   WebkitMaskSize: 'contain',
                   maskSize: 'contain',
                   WebkitMaskRepeat: 'no-repeat',
@@ -602,6 +569,21 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               {/* Top Navigation & Step Indicator Header */}
               {signUpSubStep !== 'otp' && (
                 <div style={{ position: 'relative', marginBottom: '36px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      backgroundColor: '#111827',
+                      WebkitMaskImage: `url("${floodwatchLogo}")`,
+                      maskImage: `url("${floodwatchLogo}")`,
+                      WebkitMaskSize: 'contain',
+                      maskSize: 'contain',
+                      WebkitMaskRepeat: 'no-repeat',
+                      maskRepeat: 'no-repeat',
+                      WebkitMaskPosition: 'center',
+                      maskPosition: 'center',
+                    }} />
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                     <button
                       type="button"
