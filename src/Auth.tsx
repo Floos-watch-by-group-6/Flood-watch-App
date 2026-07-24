@@ -4,7 +4,7 @@ import floodwatchLogo from './assets/Floodwatchlogo.svg';
 import splashIcon from './assets/Frame 2147229111.svg';
 
 interface AuthProps {
-  onAuthComplete: (username: string, isNewSignup?: boolean) => void;
+  onAuthComplete: (username: string, isNewSignup?: boolean, email?: string) => void;
 }
 
 type AuthStep = 'splash' | 'landing' | 'signin' | 'signup';
@@ -92,7 +92,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     }
     setEmailError('');
     const username = email.split('@')[0];
-    onAuthComplete(username || 'user');
+    onAuthComplete(username || 'user', false, email.trim());
   };
 
   // Handle Step 1 Submission
@@ -128,7 +128,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   // OTP entry is not verified — any 6 digits proceed straight through.
   const handleVerifyOtp = () => {
     const username = signUpUsername.trim() || 'user';
-    onAuthComplete(username, true);
+    onAuthComplete(username, true, signUpEmail.trim());
   };
 
   const handleResendOtp = () => {

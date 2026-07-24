@@ -117,8 +117,22 @@ export default function EmailEditScreen({ currentEmail, onBack, onSave }: EmailE
               }}
             />
           ) : (
-            <div style={{ fontSize: currentEmail ? '28px' : '20px', fontWeight: '700', color: currentEmail ? '#1F2430' : '#9CA3AF' }}>
+            <div style={{ fontSize: currentEmail ? '28px' : '20px', fontWeight: '700', color: currentEmail ? '#1F2430' : '#9CA3AF', marginBottom: currentEmail ? '20px' : 0 }}>
               {currentEmail || 'Add your email address'}
+            </div>
+          )}
+
+          {!isEditing && currentEmail && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#1F5C4E',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span style={{ fontSize: '17px', fontWeight: '700', color: '#1F5C4E' }}>Verified</span>
             </div>
           )}
 

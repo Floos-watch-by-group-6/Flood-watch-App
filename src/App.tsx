@@ -179,8 +179,9 @@ export default function App() {
 
   const [userVotes, setUserVotes] = useState<Record<number, 'yes' | 'no'>>({});
 
-  const handleAuthComplete = (username: string, isNewSignup?: boolean) => {
+  const handleAuthComplete = (username: string, isNewSignup?: boolean, email?: string) => {
     setCurrentUser(username || 'User');
+    if (email) setAccountEmail(email);
     setIsAuthenticated(true);
     setCurrentTab('maps');
     if (isNewSignup) setShowLocationPermissionModal(true);
