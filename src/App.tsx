@@ -1871,9 +1871,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                             gap: '8px',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
-                            border: newWaterLevel === 'Medium' ? '1.5px solid #003366' : '1.5px solid #E5E7EB',
-                            backgroundColor: newWaterLevel === 'Medium' ? '#003366' : '#FFFFFF',
-                            color: newWaterLevel === 'Medium' ? '#FFFFFF' : '#374151'
+                            border: newWaterLevel === 'Medium' ? '1.5px solid #EA580C' : '1.5px solid #E5E7EB',
+                            backgroundColor: newWaterLevel === 'Medium' ? '#FFEDD5' : '#FFFFFF',
+                            color: newWaterLevel === 'Medium' ? '#9A3412' : '#374151'
                           }}
                         >
                           <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#F97316' }} />
