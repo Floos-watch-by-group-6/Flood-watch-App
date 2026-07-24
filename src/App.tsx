@@ -790,7 +790,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         </div>
       )}
 
-      {!isReporting && currentTab === 'maps' && !selectedReport && (
+      {!isReporting && currentTab === 'maps' && !selectedReport && !viewingOwnReport && (
         <MapControls handleRecenterLocation={handleRecenterLocation} />
       )}
 
