@@ -38,7 +38,6 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   // OTP Verification State
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [otpError, setOtpError] = useState('');
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
 
@@ -171,26 +170,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     setSignUpSubStep('otp');
   };
 
-  const handleVerifyOtp = async () => {
-    if (!isSupabaseConfigured) {
-      setOtpError(CONFIG_ERROR_MESSAGE);
-      return;
-    }
-    setOtpError('');
-    setIsVerifyingOtp(true);
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: signUpEmail.trim(),
-      token: otp.join(''),
-      type: 'signup',
-    });
-    setIsVerifyingOtp(false);
-
-    if (error) {
-      setOtpError(error.message);
-      return;
-    }
-
-    const username = (data.user?.user_metadata?.username as string) || signUpUsername.trim() || 'user';
+  // OTP entry is not verified for now — any 6 digits proceed straight through.
+  const handleVerifyOtp = () => {
+    const username = signUpUsername.trim() || 'user';
     onAuthComplete(username, true);
   };
 
@@ -1158,7 +1140,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
 
                   <button
                     type="button"
-                    disabled={!otp.every(d => d !== '') || isVerifyingOtp}
+                    disabled={!otp.every(d => d !== '')}
                     onClick={handleVerifyOtp}
                     style={{
                       width: '100%',
@@ -1169,12 +1151,12 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       border: 'none',
                       fontWeight: '700',
                       fontSize: '17px',
-                      cursor: otp.every(d => d !== '') && !isVerifyingOtp ? 'pointer' : 'not-allowed',
+                      cursor: otp.every(d => d !== '') ? 'pointer' : 'not-allowed',
                       marginBottom: '28px',
                       transition: 'background-color 0.25s ease'
                     }}
                   >
-                    {isVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+                    Verify Code
                   </button>
 
                   <p style={{ textAlign: 'center', fontSize: '15px', color: '#9CA3AF', margin: '0 0 10px 0' }}>
