@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 
 interface LocationAccessScreenProps {
   onBack: () => void;
@@ -13,8 +14,8 @@ function WatermarkLayer() {
         position: 'absolute',
         inset: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.02)',
-        WebkitMaskImage: 'url(/src/assets/Floodwatchlogo.svg)',
-        maskImage: 'url(/src/assets/Floodwatchlogo.svg)',
+        WebkitMaskImage: `url(${floodwatchLogo})`,
+        maskImage: `url(${floodwatchLogo})`,
         WebkitMaskSize: '56px 56px',
         maskSize: '56px 56px',
         WebkitMaskRepeat: 'repeat',

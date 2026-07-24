@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import locationPinIcon from './assets/location-06.svg';
 
 import Auth from './Auth';
 import TopHeader from './components/TopHeader';
@@ -1923,7 +1924,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                     </label>
 
                     <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <img src="/src/assets/location-06.svg" alt="" width={28} height={28} style={{ flexShrink: 0 }} />
+                      <img src={locationPinIcon} alt="" width={28} height={28} style={{ flexShrink: 0 }} />
                       <div>
                         <div style={{ fontSize: '18px', fontWeight: '700', color: '#111827' }}>
                           {newLocationName}

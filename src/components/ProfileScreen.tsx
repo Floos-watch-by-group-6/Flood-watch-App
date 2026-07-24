@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 
 interface ProfileScreenProps {
   currentUser: string;
@@ -17,8 +18,8 @@ function WatermarkLayer({ opacity = 0.06 }: { opacity?: number }) {
         position: 'absolute',
         inset: 0,
         backgroundColor: `rgba(0, 0, 0, ${opacity})`,
-        WebkitMaskImage: 'url(/src/assets/Floodwatchlogo.svg)',
-        maskImage: 'url(/src/assets/Floodwatchlogo.svg)',
+        WebkitMaskImage: `url(${floodwatchLogo})`,
+        maskImage: `url(${floodwatchLogo})`,
         WebkitMaskSize: '56px 56px',
         maskSize: '56px 56px',
         WebkitMaskRepeat: 'repeat',

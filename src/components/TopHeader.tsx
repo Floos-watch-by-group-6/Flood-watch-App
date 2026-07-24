@@ -2,6 +2,8 @@ import React from 'react';
 
 // import type { Dispatch, SetStateAction } from 'react';
 import type { TabType } from '../type'; // Adjust import path if needed
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
+import cloudIcon from '../assets/cloud.svg';
 
 interface TopHeaderProps {
   isReporting: boolean;
@@ -94,7 +96,7 @@ export default function TopHeader({
             letterSpacing: '-0.5px'
           }}
         >
-         <img src="/src/assets/Floodwatchlogo.svg" alt="" width={24} height={24} />
+         <img src={floodwatchLogo} alt="" width={24} height={24} />
         </div>
       )}
 
@@ -157,7 +159,7 @@ export default function TopHeader({
           fontSize: '14px'
         }}
       >
-        <img src="/src/assets/cloud.svg" alt="" width={24} height={24} />
+        <img src={cloudIcon} alt="" width={24} height={24} />
       </button>
     </div>
   );

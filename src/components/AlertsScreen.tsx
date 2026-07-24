@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import type { FloodReport } from '../type';
 
 type AlertKind = 'warning' | 'rain' | 'verified' | 'resolved';
@@ -223,7 +224,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
         justifyContent: 'space-between',
       }}>
         <img
-          src="/src/assets/Floodwatchlogo.svg"
+          src={floodwatchLogo}
           alt="Floodwatch"
           width={32}
           height={32}

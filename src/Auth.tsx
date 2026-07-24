@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Auth.css';
+import floodwatchLogo from './assets/Floodwatchlogo.svg';
 
 interface AuthProps {
   onAuthComplete: (username: string, isNewSignup?: boolean) => void;
@@ -263,8 +264,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   width: '100%',
                   height: '100%',
                   backgroundColor: '#FFFFFF',
-                  WebkitMaskImage: `url(/src/assets/Floodwatchlogo.svg)`,
-                  maskImage: `url(/src/assets/Floodwatchlogo.svg)`,
+                  WebkitMaskImage: `url(${floodwatchLogo})`,
+                  maskImage: `url(${floodwatchLogo})`,
                   WebkitMaskSize: 'contain',
                   maskSize: 'contain',
                   WebkitMaskRepeat: 'no-repeat',
@@ -360,8 +361,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                 width: '36px',
                 height: '36px',
                 backgroundColor: '#FFFFFF',
-                WebkitMaskImage: `url(/src/assets/Floodwatchlogo.svg)`,
-                maskImage: `url(/src/assets/Floodwatchlogo.svg)`,
+                WebkitMaskImage: `url(${floodwatchLogo})`,
+                maskImage: `url(${floodwatchLogo})`,
                 WebkitMaskSize: 'contain',
                 maskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',
@@ -434,8 +435,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   width: '46px',
                   height: '46px',
                   backgroundColor: '#111827',
-                  WebkitMaskImage: `url(/src/assets/Floodwatchlogo.svg)`,
-                  maskImage: `url(/src/assets/Floodwatchlogo.svg)`,
+                  WebkitMaskImage: `url(${floodwatchLogo})`,
+                  maskImage: `url(${floodwatchLogo})`,
                   WebkitMaskSize: 'contain',
                   maskSize: 'contain',
                   WebkitMaskRepeat: 'no-repeat',

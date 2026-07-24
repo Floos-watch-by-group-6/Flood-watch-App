@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import type { FloodReport } from '../type';
 import PostDetailScreen from './PostDetailScreen';
 
@@ -159,7 +160,7 @@ export default function FeedScreen({
             {/* Logo */}
             <div style={{ flexShrink: 0 }}>
               <img
-                src="/src/assets/Floodwatchlogo.svg"
+                src={floodwatchLogo}
                 alt="Floodwatch"
                 width={42}
                 height={29}

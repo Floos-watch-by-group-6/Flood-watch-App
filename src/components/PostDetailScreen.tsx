@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import type { FeedPost } from './FeedScreen';
 
 interface Comment {
@@ -257,7 +258,7 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
             boxShadow: '0px 1px 6px rgba(0,0,0,0.05)',
             animation: 'fadeSlideUp 0.3s ease both',
           }}>
-            <img src="/src/assets/Floodwatchlogo.svg" alt="" width={26} height={26} style={{ flexShrink: 0 }} />
+            <img src={floodwatchLogo} alt="" width={26} height={26} style={{ flexShrink: 0 }} />
             <span style={{ fontSize: '13px', fontWeight: '600', color: '#0D9488' }}>
               + {comments.length} new watcher comment{comments.length !== 1 ? 's' : ''}
             </span>
