@@ -148,6 +148,7 @@ export default function App() {
   const geolocateControlRef = useRef<maplibregl.GeolocateControl | null>(null);
   
   const [reports, setReports] = useState<FloodReport[]>(INITIAL_FLOOD_REPORTS);
+  const reportsRef = useRef<FloodReport[]>(reports);
   const [selectedReport, setSelectedReport] = useState<FloodReport | null>(null);
   const [viewingOwnReport, setViewingOwnReport] = useState<FloodReport | null>(null);
   const [editingReportId, setEditingReportId] = useState<number | null>(null);
@@ -189,23 +190,49 @@ export default function App() {
   }, [currentCoords]);
 
   useEffect(() => {
+    reportsRef.current = reports;
+  }, [reports]);
+
+  useEffect(() => {
     if (currentTab !== 'profile') setProfileSubPage('main');
   }, [currentTab]);
 
   // Pull in flood reports other users have made on the shared backend, so
-  // they show up on the map, in search, and in the Feed alongside local ones.
+  // they show up on the map, in search, and in the Feed alongside local
+  // ones — including ones created by someone else while this session is
+  // already open, via periodic polling.
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
 
-    (async () => {
+    const syncReports = async () => {
       try {
         const res = await fetch(REPORTS_API_URL);
-        if (!res.ok) return;
+        if (!res.ok || cancelled) return;
         const backendReports: BackendReport[] = await res.json();
 
-        const mapped = await Promise.all(
-          backendReports.map(async (b): Promise<FloodReport> => {
+        const knownByBackendId = new Map(
+          reportsRef.current.filter(r => r.backendId).map(r => [r.backendId as string, r])
+        );
+
+        // Reports we already know about: just refresh their confirmation
+        // count/status from this same response — no extra geocoding needed.
+        const updates = new Map<string, FloodReport>();
+        for (const b of backendReports) {
+          const existing = knownByBackendId.get(b._id);
+          if (!existing) continue;
+          updates.set(b._id, {
+            ...existing,
+            confirmations: b.confirmations.yes,
+            status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+          });
+        }
+
+        // Brand-new reports (e.g. from another city) need reverse geocoding
+        // for a location name.
+        const toAdd = backendReports.filter(b => !knownByBackendId.has(b._id));
+        const added = await Promise.all(
+          toAdd.map(async (b): Promise<FloodReport> => {
             const [lng, lat] = b.location.coordinates;
             const locationName = await fetchLocationName(lng, lat);
             const createdAtMs = Date.parse(b.createdAt) || Date.now();
@@ -227,18 +254,20 @@ export default function App() {
           })
         );
 
-        if (cancelled) return;
+        if (cancelled || (updates.size === 0 && added.length === 0)) return;
         setReports(prev => {
-          const existingIds = new Set(prev.map(r => r.id));
-          const newOnes = mapped.filter(r => !existingIds.has(r.id));
-          return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
+          const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
+          return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
         });
       } catch (error) {
         console.error('Failed to fetch community reports:', error);
       }
-    })();
+    };
 
-    return () => { cancelled = true; };
+    syncReports();
+    const intervalId = setInterval(syncReports, 30000);
+
+    return () => { cancelled = true; clearInterval(intervalId); };
   }, [isAuthenticated]);
 
 
@@ -785,13 +814,21 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       }),
     })
       .then(async (res) => {
-        if (!res.ok) return;
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => null);
+          console.error('Failed to sync report to backend:', res.status, errorBody);
+          showToast("Saved on this device, but couldn't share it with the community — check your connection.");
+          return;
+        }
         const created = await res.json().catch(() => null);
         if (created?._id) {
           setReports(prev => prev.map(rep => rep.id === newReport.id ? { ...rep, backendId: created._id } : rep));
         }
       })
-      .catch((error) => console.error('Failed to sync report to backend:', error));
+      .catch((error) => {
+        console.error('Failed to sync report to backend:', error);
+        showToast("Saved on this device, but couldn't share it with the community — check your connection.");
+      });
   };
 
   const handleInitiateConfirm = () => {
