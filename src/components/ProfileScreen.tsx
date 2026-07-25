@@ -4,6 +4,10 @@ import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 interface ProfileScreenProps {
   currentUser: string;
   location: string;
+  reportsCount: number;
+  confirmationsCount: number;
+  verifiedCount: number;
+  areasCount: number;
   getUserInitials: (name: string) => string;
   onOpenPersonalInfo: () => void;
   onOpenPrivacySecurity: () => void;
@@ -73,7 +77,7 @@ function SettingsRow({ icon, title, subtitle, danger, onClick }: SettingsRowProp
   );
 }
 
-export default function ProfileScreen({ currentUser, location, getUserInitials, onOpenPersonalInfo, onOpenPrivacySecurity, onOpenLocationPreferences, onOpenHelpSupport, onLogout }: ProfileScreenProps) {
+export default function ProfileScreen({ currentUser, location, reportsCount, confirmationsCount, verifiedCount, areasCount, getUserInitials, onOpenPersonalInfo, onOpenPrivacySecurity, onOpenLocationPreferences, onOpenHelpSupport, onLogout }: ProfileScreenProps) {
   return (
     <div style={{
       position: 'absolute',
@@ -153,7 +157,7 @@ export default function ProfileScreen({ currentUser, location, getUserInitials, 
                 <path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v1.5a1.5 1.5 0 000 5V16a2 2 0 01-2 2H6a2 2 0 01-2-2v-1.5a1.5 1.5 0 000-5V8z" stroke="#F0533F" strokeWidth="1.6" strokeLinejoin="round" />
                 <path d="M12 9.4l.93 1.9 2.07.3-1.5 1.46.35 2.06-1.85-.97-1.85.97.35-2.06-1.5-1.46 2.07-.3z" stroke="#F0533F" strokeWidth="1.2" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>14</span>
+              <span style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>{reportsCount}</span>
             </div>
           </div>
           <div style={{ width: '1px', backgroundColor: '#EEF0F2' }} />
@@ -163,7 +167,7 @@ export default function ProfileScreen({ currentUser, location, getUserInitials, 
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12.5l4.5 4.5L19 7" stroke="#5BC8B0" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>31</span>
+              <span style={{ fontSize: '20px', fontWeight: 600, color: '#111827' }}>{confirmationsCount}</span>
             </div>
           </div>
         </div>
@@ -183,7 +187,7 @@ export default function ProfileScreen({ currentUser, location, getUserInitials, 
               </svg>
             </div>
             <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Verified</div>
-            <div style={{ fontSize: '19px', fontWeight: 600, color: '#111827', marginTop: '2px' }}>9</div>
+            <div style={{ fontSize: '19px', fontWeight: 600, color: '#111827', marginTop: '2px' }}>{verifiedCount}</div>
           </div>
 
           <div style={{
@@ -201,7 +205,7 @@ export default function ProfileScreen({ currentUser, location, getUserInitials, 
               </svg>
             </div>
             <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Areas</div>
-            <div style={{ fontSize: '19px', fontWeight: 600, color: '#111827', marginTop: '2px' }}>5</div>
+            <div style={{ fontSize: '19px', fontWeight: 600, color: '#111827', marginTop: '2px' }}>{areasCount}</div>
           </div>
         </div>
       </div>

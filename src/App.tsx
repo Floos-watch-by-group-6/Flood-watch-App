@@ -35,6 +35,11 @@ import type { FloodReport } from './type';
 const MAPTILER_KEY = 'kaeXCvS4tEksnniL7N1x';
 const VERIFICATION_THRESHOLD = 3;
 
+// On Android, skip the app's custom iOS-styled permission sheets and trigger
+// the real browser APIs instead, so the OS's own system permission dialog
+// shows up (as it would in a native Android app).
+const isAndroidDevice = () => /android/i.test(navigator.userAgent);
+
 // 1. Extend your MapTilerFeature interface to include place_type
 interface MapTilerFeature {
   text?: string;
@@ -183,6 +188,40 @@ export default function App() {
       (target === 'report' ? fileInputRef : confirmFileInputRef).current?.click();
     }
   };
+
+  // Android: skip the custom photo-permission sheet and go straight to the
+  // system's own file/photo picker, which is already a native Android dialog.
+  useEffect(() => {
+    if (!pendingPhotoTarget || !isAndroidDevice()) return;
+    handlePhotoPermissionResolved(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPhotoTarget]);
+
+  // Android: skip the custom location-permission sheet and trigger the real
+  // geolocation prompt, which the OS renders as its own system dialog.
+  useEffect(() => {
+    if (!showLocationPermissionModal || !isAndroidDevice()) return;
+    setShowLocationPermissionModal(false);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        () => setShowNotificationPermissionModal(true),
+        () => setShowNotificationPermissionModal(true),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      setShowNotificationPermissionModal(true);
+    }
+  }, [showLocationPermissionModal]);
+
+  // Android: skip the custom notification-permission sheet and trigger the
+  // real Notification API, which the OS renders as its own system dialog.
+  useEffect(() => {
+    if (!showNotificationPermissionModal || !isAndroidDevice()) return;
+    setShowNotificationPermissionModal(false);
+    if ('Notification' in window) {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, [showNotificationPermissionModal]);
 
   const [userVotes, setUserVotes] = useState<Record<number, 'yes' | 'no'>>({});
 
@@ -784,7 +823,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       <input type="file" accept="image/*" capture="environment" ref={fileInputRef} style={{ display: 'none' }} onChange={handleCameraCapture} />
       <input type="file" accept="image/*" capture="environment" ref={confirmFileInputRef} style={{ display: 'none' }} onChange={handleConfirmPhotoCaptured} />
 
-      {pendingPhotoTarget && (
+      {pendingPhotoTarget && !isAndroidDevice() && (
         <PhotoPermissionModal
           onSelectPhotos={() => handlePhotoPermissionResolved(true)}
           onAllowAll={() => handlePhotoPermissionResolved(true)}
@@ -792,7 +831,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         />
       )}
 
-      {showLocationPermissionModal && (
+      {showLocationPermissionModal && !isAndroidDevice() && (
         <LocationPermissionModal
           onAllowOnce={() => { setShowLocationPermissionModal(false); setShowNotificationPermissionModal(true); }}
           onAllowWhileUsing={() => { setShowLocationPermissionModal(false); setShowNotificationPermissionModal(true); }}
@@ -800,7 +839,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         />
       )}
 
-      {showNotificationPermissionModal && (
+      {showNotificationPermissionModal && !isAndroidDevice() && (
         <NotificationPermissionModal
           onDontAllow={() => setShowNotificationPermissionModal(false)}
           onOk={() => setShowNotificationPermissionModal(false)}
@@ -980,6 +1019,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           <ProfileScreen
             currentUser={currentUser}
             location={displayedLocation}
+            reportsCount={reports.filter(r => r.reportedBy === currentUser).length}
+            confirmationsCount={Object.values(userVotes).filter(v => v === 'yes').length}
+            verifiedCount={reports.filter(r => r.reportedBy === currentUser && r.status === 'Verified').length}
+            areasCount={new Set(reports.filter(r => r.reportedBy === currentUser).map(r => r.locationName)).size}
             getUserInitials={getUserInitials}
             onOpenPersonalInfo={() => setProfileSubPage('personalInfo')}
             onOpenPrivacySecurity={() => setProfileSubPage('privacySecurity')}
