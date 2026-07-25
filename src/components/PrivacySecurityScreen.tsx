@@ -66,7 +66,7 @@ export default function PrivacySecurityScreen({ onBack, onChangePassword, onDele
             <path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-4.5 7.79" stroke="#1F5C4E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: '700', color: '#B9BFC7' }}>Anonymous Reporting</div>
+            <div style={{ fontSize: '14px', fontWeight: '500', color: '#B9BFC7' }}>Anonymous Reporting</div>
             <div style={{ fontSize: '14px', color: '#B9BFC7', marginTop: '2px' }}>Only your username is ever shown to others</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '8px' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -102,7 +102,7 @@ export default function PrivacySecurityScreen({ onBack, onChangePassword, onDele
             <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="#1F5C4E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: '700', color: '#111827' }}>Change password</div>
+            <div style={{ fontSize: '14px', fontWeight: '500', color: '#262537' }}>Change password</div>
             <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '2px' }}>Update your account password</div>
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -123,7 +123,7 @@ export default function PrivacySecurityScreen({ onBack, onChangePassword, onDele
             <path d="M10.3 11V9.3a1.7 1.7 0 013.4 0V11" stroke="#EF4444" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: '700', color: '#EF4444' }}>Delete My Account</div>
+            <div style={{ fontSize: '14px', fontWeight: '500', color: '#EF4444' }}>Delete My Account</div>
             <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '2px' }}>Permanently remove your account</div>
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>

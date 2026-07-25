@@ -62,7 +62,7 @@ function SettingsRow({ icon, title, subtitle, danger, onClick }: SettingsRowProp
     >
       <div style={{ flexShrink: 0, width: '22px', display: 'flex', justifyContent: 'center' }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '16px', fontWeight: 600, color: danger ? '#F0533F' : '#111827' }}>{title}</div>
+        <div style={{ fontSize: '16px', fontWeight: 500, color: danger ? '#F0533F' : '#262537' }}>{title}</div>
         <div style={{ fontSize: '13px', color: '#9CA3AF', marginTop: '2px' }}>{subtitle}</div>
       </div>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>

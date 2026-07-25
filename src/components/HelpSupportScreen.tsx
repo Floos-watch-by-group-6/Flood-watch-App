@@ -86,7 +86,7 @@ export default function HelpSupportScreen({ onBack }: HelpSupportScreenProps) {
                 textAlign: 'left',
               }}
             >
-              <span style={{ fontSize: '15px', fontWeight: 500, color: '#1F2430' }}>{q}</span>
+              <span style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>{q}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                 <path d="M9 6l6 6-6 6" stroke="#C4C9D1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

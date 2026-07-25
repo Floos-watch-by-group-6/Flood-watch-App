@@ -35,7 +35,7 @@ function InfoRow({ path, label, onClick }: { path: string; label: string; onClic
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
         <path d={path} stroke="#1F5C4E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span style={{ fontSize: '17px', fontWeight: '700', color: '#111827' }}>{label}</span>
+      <span style={{ fontSize: '14px', fontWeight: '500', color: '#262537' }}>{label}</span>
     </div>
   );
 }

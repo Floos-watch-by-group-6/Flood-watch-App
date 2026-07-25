@@ -82,7 +82,7 @@ export default function LocationPreferencesScreen({ onBack, defaultZone, onOpenL
             <circle cx="12" cy="10" r="2.6" stroke="#1F5C4E" strokeWidth="1.8" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: 700, color: '#111827' }}>Location Access</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>Location Access</div>
             <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '2px' }}>Opens your device's system settings</div>
           </div>
           <Chevron />
@@ -98,7 +98,7 @@ export default function LocationPreferencesScreen({ onBack, defaultZone, onOpenL
             <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#1F5C4E" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: 700, color: '#111827' }}>Precise Location</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>Precise Location</div>
             <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '2px' }}>More accurate flood reports</div>
           </div>
           <button
@@ -135,7 +135,7 @@ export default function LocationPreferencesScreen({ onBack, defaultZone, onOpenL
             <line x1="21" y1="21" x2="16.5" y2="16.5" stroke="#1F5C4E" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '17px', fontWeight: 700, color: '#111827' }}>Default Zone</div>
+            <div style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>Default Zone</div>
             <div style={{ fontSize: '14px', color: '#9CA3AF', marginTop: '2px' }}>{defaultZone}</div>
           </div>
           <Chevron />
