@@ -134,7 +134,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
         return;
       }
       if (data.token) localStorage.setItem('token', data.token);
-      onAuthComplete(data.user?.name || data.name || email.split('@')[0] || 'user', false, email.trim());
+      // Prefer the username remembered from this device's signup — the
+      // backend's login response doesn't reliably include the real one.
+      const rememberedName = localStorage.getItem(`floodwatch_username_${email.trim().toLowerCase()}`);
+      onAuthComplete(rememberedName || data.user?.name || data.name || email.split('@')[0] || 'user', false, email.trim());
     } catch {
       setSignInError('Unable to connect to the server. Check your connection and try again.');
     } finally {
@@ -219,7 +222,12 @@ export default function Auth({ onAuthComplete }: AuthProps) {
         return;
       }
       if (data.token) localStorage.setItem('token', data.token);
-      onAuthComplete(data.user?.name || data.name || signUpUsername.trim() || 'user', true, signUpEmail.trim());
+      // The username the user actually typed is the source of truth — the
+      // backend's response isn't reliably the same value. Remember it so
+      // future logins (which only send email+password) show it too.
+      const chosenUsername = signUpUsername.trim() || data.user?.name || data.name || 'user';
+      localStorage.setItem(`floodwatch_username_${signUpEmail.trim().toLowerCase()}`, chosenUsername);
+      onAuthComplete(chosenUsername, true, signUpEmail.trim());
     } catch {
       setOtpError('Unable to connect to the server. Check your connection and try again.');
     } finally {
