@@ -1795,7 +1795,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                     </svg>
                   </button>
 
-                  <h2 style={{ margin: 0, fontSize: '30px', fontWeight: '700', color: '#111827', letterSpacing: '-0.01em' }}>Report flooding</h2>
+                  <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '600', color: '#111827', letterSpacing: '-0.01em' }}>Report flooding</h2>
                   <p style={{ margin: '6px 0 0 0', fontSize: '15px', color: '#9CA3AF' }}>Takes about 15 seconds</p>
 
                   <form onSubmit={handleReportSubmit}>
@@ -2001,7 +2001,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                     </svg>
                   </button>
 
-                  <h2 style={{ margin: 0, fontSize: '30px', fontWeight: '700', color: '#111827', letterSpacing: '-0.01em' }}>Review report</h2>
+                  <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '600', color: '#111827', letterSpacing: '-0.01em' }}>Review report</h2>
                   <p style={{ margin: '6px 0 0 0', fontSize: '15px', color: '#9CA3AF' }}>Make sure everything looks right</p>
 
                   {capturedImages.length > 0 && (
@@ -2101,7 +2101,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                         <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
-                    <h2 style={{ margin: 0, fontSize: '19px', fontWeight: '700', color: '#111827', textAlign: 'center' }}>
+                    <h2 style={{ margin: 0, fontSize: '19px', fontWeight: '600', color: '#111827', textAlign: 'center' }}>
                       Adjust location
                     </h2>
                     <div />

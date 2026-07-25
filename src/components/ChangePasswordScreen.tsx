@@ -71,7 +71,7 @@ export default function ChangePasswordScreen({ onBack, onSubmit }: ChangePasswor
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '18px 52px 18px 20px',
-    borderRadius: '26px',
+    borderRadius: '12px',
     border: '1.5px solid #E5E7EB',
     backgroundColor: '#FFFFFF',
     fontSize: '17px',
@@ -115,7 +115,7 @@ export default function ChangePasswordScreen({ onBack, onSubmit }: ChangePasswor
               <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h2 style={{ margin: 0, fontSize: '26px', fontWeight: 700, color: '#111827', textAlign: 'center', letterSpacing: '-0.01em' }}>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 600, color: '#111827', textAlign: 'center', letterSpacing: '-0.01em' }}>
             Change Password
           </h2>
           <div />

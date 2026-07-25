@@ -67,7 +67,7 @@ export default function PersonalInfoScreen({ onBack, onOpenUsername, onOpenPhone
               <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '700', color: '#111827', textAlign: 'center', letterSpacing: '-0.01em' }}>
+          <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '600', color: '#111827', textAlign: 'center', letterSpacing: '-0.01em' }}>
             Personal Information
           </h2>
           <div />

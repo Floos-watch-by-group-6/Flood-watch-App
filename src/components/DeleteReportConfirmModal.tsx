@@ -31,7 +31,7 @@ export default function DeleteReportConfirmModal({ onConfirm, onCancel }: Delete
           boxShadow: '0px 20px 50px rgba(0, 0, 0, 0.25)',
         }}
       >
-        <h2 style={{ margin: '0 0 14px 0', fontSize: '22px', fontWeight: 700, color: '#1F2430' }}>
+        <h2 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: 600, color: '#1F2430' }}>
           Delete report?
         </h2>
 

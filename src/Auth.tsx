@@ -304,7 +304,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               }} />
             </div>
 
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: '0 0 12px 0' }}>
+            <h1 style={{ fontSize: '21px', fontWeight: '600', color: '#111827', margin: '0 0 12px 0' }}>
               Welcome to FloodWatch
             </h1>
             <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '36px', lineHeight: '1.5' }}>
@@ -379,8 +379,8 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               </div>
 
               <h1 style={{
-                fontSize: '34px',
-                fontWeight: '700',
+                fontSize: '28px',
+                fontWeight: '600',
                 color: '#111827',
                 textAlign: 'center',
                 marginBottom: '40px',
@@ -403,7 +403,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     style={{
                       width: '100%',
                       padding: '16px 20px',
-                      borderRadius: '26px',
+                      borderRadius: '12px',
                       border: emailError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
                       backgroundColor: '#FFFFFF',
                       fontSize: '16px',
@@ -434,7 +434,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       style={{
                         width: '100%',
                         padding: '16px 48px 16px 20px',
-                        borderRadius: '26px',
+                        borderRadius: '12px',
                         border: '1.5px solid #E5E7EB',
                         backgroundColor: '#FFFFFF',
                         fontSize: '16px',
@@ -562,7 +562,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                         <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </button>
-                    <h2 style={{ fontSize: '26px', fontWeight: '700', color: '#111827', margin: 0, letterSpacing: '-0.01em' }}>
+                    <h2 style={{ fontSize: '22px', fontWeight: '600', color: '#111827', margin: 0, letterSpacing: '-0.01em' }}>
                       Create your Account
                     </h2>
                   </div>
@@ -591,7 +591,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   </div>
 
                   <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                    <h3 style={{ fontSize: '30px', fontWeight: '700', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
+                    <h3 style={{ fontSize: '26px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
                       Personal Information
                     </h3>
                     <p style={{ fontSize: '16px', color: '#9CA3AF', margin: 0 }}>
@@ -628,7 +628,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                         style={{
                           width: '100%',
                           padding: '16px 20px',
-                          borderRadius: '26px',
+                          borderRadius: '12px',
                           border: '1.5px solid #E5E7EB',
                           backgroundColor: '#FFFFFF',
                           fontSize: '16px',
@@ -653,7 +653,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                         style={{
                           width: '100%',
                           padding: '16px 20px',
-                          borderRadius: '26px',
+                          borderRadius: '12px',
                           border: signUpEmailError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
                           backgroundColor: '#FFFFFF',
                           fontSize: '16px',
@@ -717,7 +717,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   </div>
 
                   <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                    <h3 style={{ fontSize: '30px', fontWeight: '700', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
+                    <h3 style={{ fontSize: '26px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
                       Secure Your Account
                     </h3>
                     <p style={{ fontSize: '16px', color: '#9CA3AF', margin: 0, lineHeight: '1.4' }}>
@@ -755,7 +755,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                           style={{
                             width: '100%',
                             padding: '16px 48px 16px 20px',
-                            borderRadius: '26px',
+                            borderRadius: '12px',
                             border: '1.5px solid #E5E7EB',
                             backgroundColor: '#FFFFFF',
                             fontSize: '16px',
@@ -870,7 +870,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   </div>
 
                   <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                    <h3 style={{ fontSize: '30px', fontWeight: '700', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
+                    <h3 style={{ fontSize: '26px', fontWeight: '600', color: '#111827', margin: '0 0 8px 0', letterSpacing: '-0.01em' }}>
                       Almost Done!
                     </h3>
                     <p style={{ fontSize: '16px', color: '#9CA3AF', margin: 0 }}>
@@ -1024,7 +1024,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   </button>
 
                   <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-                    <h3 style={{ fontSize: '30px', fontWeight: '700', color: '#111827', margin: '0 0 10px 0', letterSpacing: '-0.01em' }}>
+                    <h3 style={{ fontSize: '26px', fontWeight: '600', color: '#111827', margin: '0 0 10px 0', letterSpacing: '-0.01em' }}>
                       Hello, {signUpUsername || 'User'}
                     </h3>
                     <p style={{ fontSize: '16px', color: '#9CA3AF', margin: 0, lineHeight: '1.4' }}>

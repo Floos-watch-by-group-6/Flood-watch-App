@@ -53,7 +53,7 @@ export default function LogoutModal({ onLogout, onCancel }: LogoutModalProps) {
           </div>
         </div>
 
-        <h2 style={{ margin: '0 0 14px 0', fontSize: '22px', fontWeight: 700, color: '#3A3A44', textAlign: 'center', letterSpacing: '-0.01em' }}>
+        <h2 style={{ margin: '0 0 14px 0', fontSize: '20px', fontWeight: 600, color: '#3A3A44', textAlign: 'center', letterSpacing: '-0.01em' }}>
           Log out of FloodWatch?
         </h2>
 

@@ -230,7 +230,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
           height={32}
           style={{ display: 'block' }}
         />
-        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#111827' }}>Alerts</h1>
+        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#111827' }}>Alerts</h1>
         <button
           onClick={markAllRead}
           style={{

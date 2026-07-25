@@ -77,7 +77,7 @@ export default function MapControls({ handleRecenterLocation, handleInfoClick }:
               boxSizing: 'border-box',
             }}
           >
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1F2430', margin: '0 0 10px 0', letterSpacing: '-0.01em' }}>Map key</h2>
+            <h2 style={{ fontSize: '21px', fontWeight: 600, color: '#1F2430', margin: '0 0 10px 0', letterSpacing: '-0.01em' }}>Map key</h2>
             <p style={{ fontSize: '15px', color: '#6B7280', margin: '0 0 24px 0', lineHeight: '1.5' }}>
               Color always = severity. Ring style always = status.
             </p>

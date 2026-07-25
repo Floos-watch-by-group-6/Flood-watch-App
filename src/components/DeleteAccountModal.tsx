@@ -55,7 +55,7 @@ export default function DeleteAccountModal({ onDelete, onKeep }: DeleteAccountMo
           </div>
         </div>
 
-        <h2 style={{ margin: '0 0 20px 0', fontSize: '26px', fontWeight: 700, color: '#3A3A44', textAlign: 'center', letterSpacing: '-0.01em' }}>
+        <h2 style={{ margin: '0 0 20px 0', fontSize: '22px', fontWeight: 600, color: '#3A3A44', textAlign: 'center', letterSpacing: '-0.01em' }}>
           This can&rsquo;t be undone
         </h2>
 
