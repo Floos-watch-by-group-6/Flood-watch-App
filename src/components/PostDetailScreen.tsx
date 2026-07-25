@@ -15,18 +15,19 @@ interface PostDetailScreenProps {
   onBack: () => void;
 }
 
+// Pill palette matches the pillu.svg asset (same as the Feed).
 function severityColors(level: 'Low' | 'Medium' | 'High'): { bg: string; text: string } {
   switch (level) {
-    case 'High': return { bg: '#FDECEA', text: '#C62828' };
-    case 'Medium': return { bg: '#FFF3E0', text: '#E65100' };
-    case 'Low': return { bg: '#FFFDE7', text: '#F57F17' };
+    case 'High': return { bg: 'rgba(248, 17, 0, 0.08)', text: '#F81100' };
+    case 'Medium': return { bg: 'rgba(232, 115, 14, 0.10)', text: '#E8730E' };
+    case 'Low': return { bg: 'rgba(31, 157, 87, 0.10)', text: '#1F9D57' };
   }
 }
 
 function severityLabel(level: 'Low' | 'Medium' | 'High'): string {
   switch (level) {
     case 'High': return 'High Severity';
-    case 'Medium': return 'Med Severity';
+    case 'Medium': return 'Medium Severity';
     case 'Low': return 'Low Severity';
   }
 }
@@ -36,7 +37,7 @@ const INITIAL_COMMENTS: Comment[] = [
     id: 1,
     username: 'KBSHOGI',
     timeAgo: '22 min ago',
-    text: 'I feel you skii. same thing over here',
+    text: 'I feel you skiii. same thing over here',
   },
   {
     id: 2,
@@ -46,13 +47,18 @@ const INITIAL_COMMENTS: Comment[] = [
   },
 ];
 
+const CARD_OUTLINE = '1px solid #EFEFEF';
+const DIVIDER = '#EDEEF0';
+
 export default function PostDetailScreen({ post, currentUser, onBack }: PostDetailScreenProps) {
   const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
   const [replyText, setReplyText] = useState('');
-  const [hasNewComment, setHasNewComment] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const commentsRef = useRef<HTMLDivElement>(null);
   const sevColors = severityColors(post.severity);
+
+  const watcherCount = comments.filter((c) => c.username !== currentUser).length;
 
   const handleSend = () => {
     const text = replyText.trim();
@@ -63,10 +69,8 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
       timeAgo: 'Just now',
       text,
     };
-    setComments(prev => [...prev, newComment]);
+    setComments((prev) => [...prev, newComment]);
     setReplyText('');
-    setHasNewComment(false);
-    // scroll to bottom after sending
     setTimeout(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, 50);
@@ -76,20 +80,18 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
     if (e.key === 'Enter') handleSend();
   };
 
-  // Focus input on mount
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 300);
   }, []);
+
+  const canSend = replyText.trim().length > 0;
 
   return (
     <div
       style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#F6F7F9',
+        inset: 0,
+        backgroundColor: '#FFFFFF',
         display: 'flex',
         flexDirection: 'column',
         fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -108,42 +110,38 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
         }
       `}</style>
 
-      {/* ── STICKY HEADER ── */}
+      {/* ── HEADER ── */}
       <div style={{
-        position: 'sticky',
-        top: 0,
-        backgroundColor: '#F6F7F9',
-        zIndex: 10,
+        position: 'relative',
+        backgroundColor: '#FFFFFF',
         padding: '52px 20px 14px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexShrink: 0,
       }}>
-        {/* Back button */}
         <button
           onClick={onBack}
           style={{
             position: 'absolute',
-            left: '16px',
-            width: '36px',
-            height: '36px',
+            left: '20px',
+            width: '44px',
+            height: '44px',
             borderRadius: '50%',
             backgroundColor: '#FFFFFF',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0px 2px 10px rgba(0,0,0,0.10)',
+            boxShadow: '0px 4px 12px rgba(0,0,0,0.10)',
             cursor: 'pointer',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2937" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5" />
-            <path d="M12 19L5 12L12 5" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2430" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-
-        <h2 style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#111827' }}>Posts</h2>
+        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: '#262537', letterSpacing: '-0.01em' }}>Posts</h2>
       </div>
 
       {/* ── SCROLLABLE CONTENT ── */}
@@ -152,69 +150,64 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingBottom: '90px',
+          padding: '6px 14px 100px 14px',
         }}
       >
         {/* ── ORIGINAL POST CARD ── */}
         <div style={{
           backgroundColor: '#FFFFFF',
-          margin: '8px 12px',
-          borderRadius: '16px',
-          padding: '16px',
-          boxShadow: '0px 1px 6px rgba(0,0,0,0.06)',
+          borderRadius: '24px',
+          padding: '18px 20px',
+          marginBottom: '16px',
+          border: CARD_OUTLINE,
         }}>
-          {/* User row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-            <div style={{
-              width: '28px', height: '28px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #003366 0%, #1a5fa8 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: '10px', fontWeight: '700', flexShrink: 0,
-            }}>
-              {post.username.slice(0, 2).toUpperCase()}
-            </div>
-            <span style={{ fontSize: '12px', fontWeight: '600', color: '#111827' }}>@{post.username}</span>
-            <span style={{ fontSize: '11px', color: '#9CA3AF' }}>|</span>
-            <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{post.timeAgo}</span>
+          {/* Username row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 500, color: '#6E6E76' }}>@{post.username}</span>
+            <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
+            <span style={{ fontSize: '14px', color: '#9CA0A8' }}>{post.timeAgo}</span>
           </div>
+
+          <div style={{ borderTop: `1px solid ${DIVIDER}`, margin: '14px 0' }} />
 
           {/* Reported at */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>Reported at:</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="#EF4444" style={{ flexShrink: 0 }}>
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{post.locationName}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '15px', fontWeight: 600, color: '#1F2430' }}>Reported at:</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#1F2430" strokeWidth="1.8" strokeLinejoin="round" />
+                <circle cx="12" cy="9" r="2.5" stroke="#1F2430" strokeWidth="1.8" />
+              </svg>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#1F2430' }}>{post.locationName}</span>
+            </span>
           </div>
 
-          {/* Badges */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px', flexWrap: 'wrap' }}>
+          {/* Severity + Status pills (joined segmented) */}
+          <div style={{ display: 'flex', gap: '1px', marginBottom: '12px', flexWrap: 'wrap' }}>
             <span style={{
-              fontSize: '11px', fontWeight: '600', padding: '3px 10px',
-              borderRadius: '20px', backgroundColor: sevColors.bg, color: sevColors.text,
-              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              fontSize: '12px',
+              fontWeight: 600,
+              padding: '4px 11px',
+              borderRadius: '12px 8px 8px 12px',
+              backgroundColor: sevColors.bg,
+              color: sevColors.text,
             }}>
-              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: sevColors.text, display: 'inline-block' }} />
               {severityLabel(post.severity)}
             </span>
             <span style={{
-              fontSize: '11px', fontWeight: '600', padding: '3px 10px',
-              borderRadius: '20px',
-              backgroundColor: post.status === 'Verified' ? '#D1FAE5' : '#F3F4F6',
-              color: post.status === 'Verified' ? '#065F46' : '#6B7280',
-              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              fontSize: '12px',
+              fontWeight: 600,
+              padding: '4px 11px',
+              borderRadius: '8px 12px 12px 8px',
+              backgroundColor: post.status === 'Verified' ? 'rgba(31, 157, 87, 0.12)' : 'rgba(110, 110, 122, 0.18)',
+              color: post.status === 'Verified' ? '#1F9D57' : '#6E6E7A',
             }}>
-              {post.status === 'Verified' && (
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="#065F46">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                </svg>
-              )}
               {post.status}
             </span>
           </div>
 
           {/* Description */}
-          <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#374151', lineHeight: '1.55' }}>
+          <p style={{ margin: '0 0 14px 0', fontSize: '13px', color: '#8E8E96', lineHeight: '1.45' }}>
             {post.description}
           </p>
 
@@ -223,15 +216,14 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
             <div style={{
               display: 'grid',
               gridTemplateColumns: post.images.length === 1 ? '1fr' : '1fr 1fr',
-              gap: '6px',
-              borderRadius: '12px',
-              overflow: 'hidden',
+              gap: '10px',
             }}>
               {post.images.slice(0, 2).map((img, i) => (
                 <div key={i} style={{
-                  borderRadius: '10px', overflow: 'hidden',
-                  aspectRatio: post.images.length === 1 ? '16/9' : '1/1',
-                  backgroundColor: '#F3F4F6',
+                  borderRadius: '18px',
+                  overflow: 'hidden',
+                  aspectRatio: post.images.length === 1 ? '16 / 10' : '3 / 4',
+                  backgroundColor: '#EDEEF0',
                 }}>
                   <img
                     src={img}
@@ -243,62 +235,59 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
               ))}
             </div>
           )}
+
+          {/* New watcher comment indicator */}
+          {watcherCount > 0 && (
+            <>
+              <div style={{ borderTop: `1px solid ${DIVIDER}`, margin: '16px 0 14px 0' }} />
+              <button
+                type="button"
+                onClick={() => commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '2px 0',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <img src={floodwatchLogo} alt="" width={24} height={24} style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '15px', fontWeight: 600, color: '#0E4567' }}>
+                  + {watcherCount} new watcher comment{watcherCount !== 1 ? 's' : ''}
+                </span>
+              </button>
+            </>
+          )}
         </div>
 
-        {/* ── NEW WATCHER COMMENT BANNER ── */}
-        {hasNewComment && (
-          <div style={{
-            backgroundColor: '#FFFFFF',
-            margin: '6px 12px',
-            borderRadius: '14px',
-            padding: '13px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            boxShadow: '0px 1px 6px rgba(0,0,0,0.05)',
-            animation: 'fadeSlideUp 0.3s ease both',
-          }}>
-            <img src={floodwatchLogo} alt="" width={26} height={26} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#0D9488' }}>
-              + {comments.length} new watcher comment{comments.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        )}
-
-        {/* ── COMMENTS LIST ── */}
-        <div style={{ margin: '4px 0' }}>
+        {/* ── COMMENTS ── */}
+        <div ref={commentsRef}>
           {comments.map((comment, idx) => (
             <div
               key={comment.id}
               style={{
                 backgroundColor: '#FFFFFF',
-                margin: '4px 12px',
-                borderRadius: '14px',
-                padding: '14px 16px',
-                boxShadow: '0px 1px 4px rgba(0,0,0,0.05)',
+                borderRadius: '20px',
+                padding: '16px 20px',
+                marginBottom: '12px',
+                border: CARD_OUTLINE,
                 animation: idx >= INITIAL_COMMENTS.length ? 'fadeSlideUp 0.25s ease both' : 'none',
               }}
             >
-              {/* Comment user row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                <div style={{
-                  width: '26px', height: '26px', borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #374151 0%, #6B7280 100%)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: '9px', fontWeight: '700', flexShrink: 0,
-                }}>
-                  {comment.username.slice(0, 2).toUpperCase()}
-                </div>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#111827' }}>@{comment.username}</span>
-                <span style={{ fontSize: '11px', color: '#9CA3AF' }}>|</span>
-                <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{comment.timeAgo}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500, color: '#6E6E76' }}>@{comment.username}</span>
+                <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
+                <span style={{ fontSize: '14px', color: '#9CA0A8' }}>{comment.timeAgo}</span>
               </div>
 
-              {/* Divider */}
-              <div style={{ height: '1px', backgroundColor: '#F3F4F6', marginBottom: '8px' }} />
+              <div style={{ borderTop: `1px solid ${DIVIDER}`, margin: '12px 0' }} />
 
-              {/* Comment text */}
-              <p style={{ margin: 0, fontSize: '13px', color: '#374151', lineHeight: '1.5' }}>
+              <p style={{ margin: 0, fontSize: '14px', color: '#4B4B57', lineHeight: '1.5' }}>
                 {comment.text}
               </p>
             </div>
@@ -306,34 +295,28 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
         </div>
       </div>
 
-      {/* ── PINNED REPLY BAR ── */}
+      {/* ── REPLY BAR ── */}
       <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#F6F7F9',
-        padding: '10px 16px 32px 16px',
+        flexShrink: 0,
+        backgroundColor: '#FFFFFF',
+        padding: '10px 16px max(20px, env(safe-area-inset-bottom)) 16px',
         borderTop: '1px solid #EFEFEF',
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          backgroundColor: '#FFFFFF',
-          borderRadius: '50px',
-          padding: '10px 14px 10px 14px',
-          border: '1.5px solid #E5E7EB',
-          boxShadow: '0px 2px 8px rgba(0,0,0,0.06)',
+          gap: '12px',
+          backgroundColor: '#F1F2F3',
+          borderRadius: '999px',
+          padding: '8px 10px 8px 14px',
         }}>
-          {/* Avatar icon */}
+          {/* Person icon */}
           <div style={{
-            width: '30px', height: '30px', borderRadius: '50%',
-            border: '1.5px solid #D1D5DB',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
+            width: '32px', height: '32px', borderRadius: '50%',
+            border: '1.6px solid #C4C7CC',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9AA0A6" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
@@ -351,43 +334,36 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
               flex: 1,
               border: 'none',
               outline: 'none',
-              fontSize: '14px',
-              color: '#111827',
+              fontSize: '15px',
+              color: '#1F2430',
               backgroundColor: 'transparent',
               fontFamily: 'inherit',
+              minWidth: 0,
             }}
           />
 
           {/* Send button */}
           <button
             onClick={handleSend}
-            disabled={!replyText.trim()}
+            disabled={!canSend}
             style={{
               flexShrink: 0,
-              width: '32px',
-              height: '32px',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
-              backgroundColor: replyText.trim() ? '#003366' : 'transparent',
+              backgroundColor: 'transparent',
               border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              cursor: replyText.trim() ? 'pointer' : 'default',
-              transition: 'background-color 0.2s',
+              cursor: canSend ? 'pointer' : 'default',
+              opacity: canSend ? 1 : 0.55,
+              transition: 'opacity 0.2s',
             }}
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={replyText.trim() ? '#FFFFFF' : '#9CA3AF'}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#141B34" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.5 13.5L20.5 3.5" />
+              <path d="M20.5 3.5l-6.4 17a0.6 0.6 0 0 1-1.13.05l-3.4-7.65a0.6 0.6 0 0 0-.3-.3L1.95 9.6a0.6 0.6 0 0 1 .05-1.13z" />
             </svg>
           </button>
         </div>
