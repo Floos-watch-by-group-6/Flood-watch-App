@@ -34,11 +34,44 @@ import type { FloodReport } from './type';
 
 const MAPTILER_KEY = 'kaeXCvS4tEksnniL7N1x';
 const VERIFICATION_THRESHOLD = 3;
+const REPORTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/reports';
+const FALLBACK_REPORT_IMAGE = 'https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=400';
 
 // On Android, skip the app's custom iOS-styled permission sheets and trigger
 // the real browser APIs instead, so the OS's own system permission dialog
 // shows up (as it would in a native Android app).
 const isAndroidDevice = () => /android/i.test(navigator.userAgent);
+
+// Shape returned by the shared backend's GET /api/reports.
+interface BackendReport {
+  _id: string;
+  location: { type: string; coordinates: [number, number] };
+  confirmations: { yes: number; no: number; notSure: number };
+  severity: 'Low' | 'Medium' | 'High';
+  description?: string;
+  photoUrl?: string;
+  status?: string;
+  createdAt: string;
+}
+
+// The backend keys reports by Mongo ObjectId (a string); our FloodReport
+// shape uses numeric ids, so hash the ObjectId into a stable number.
+function hashIdToNumber(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function timeActiveFrom(createdAtMs: number): string {
+  const diffMins = Math.max(0, Math.floor((Date.now() - createdAtMs) / 60000));
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min`;
+  const hrs = Math.floor(diffMins / 60);
+  if (hrs < 24) return `${hrs}hr ${diffMins % 60}m`;
+  return `${Math.floor(hrs / 24)}d`;
+}
 
 // 1. Extend your MapTilerFeature interface to include place_type
 interface MapTilerFeature {
@@ -156,6 +189,55 @@ export default function App() {
   useEffect(() => {
     if (currentTab !== 'profile') setProfileSubPage('main');
   }, [currentTab]);
+
+  // Pull in flood reports other users have made on the shared backend, so
+  // they show up on the map, in search, and in the Feed alongside local ones.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(REPORTS_API_URL);
+        if (!res.ok) return;
+        const backendReports: BackendReport[] = await res.json();
+
+        const mapped = await Promise.all(
+          backendReports.map(async (b): Promise<FloodReport> => {
+            const [lng, lat] = b.location.coordinates;
+            const locationName = await fetchLocationName(lng, lat);
+            const createdAtMs = Date.parse(b.createdAt) || Date.now();
+            return {
+              id: hashIdToNumber(b._id),
+              backendId: b._id,
+              locationName,
+              description: b.description,
+              coordinates: [lng, lat],
+              imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
+              images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
+              waterLevel: b.severity,
+              status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+              confirmations: b.confirmations.yes,
+              photosCount: b.photoUrl ? 1 : 0,
+              timeActive: timeActiveFrom(createdAtMs),
+              createdAt: createdAtMs,
+            };
+          })
+        );
+
+        if (cancelled) return;
+        setReports(prev => {
+          const existingIds = new Set(prev.map(r => r.id));
+          const newOnes = mapped.filter(r => !existingIds.has(r.id));
+          return newOnes.length > 0 ? [...prev, ...newOnes] : prev;
+        });
+      } catch (error) {
+        console.error('Failed to fetch community reports:', error);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
 
 
   const [newWaterLevel, setNewWaterLevel] = useState<'Low' | 'Medium' | 'High' | null>(null);
@@ -675,13 +757,58 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
     setReportPostedIsEdit(false);
     setShowReportPostedToast(true);
     setTimeout(() => setShowReportPostedToast(false), 4000);
+
+    // Sync to the shared backend in the background so other users can see
+    // this report too. Local UX above is unaffected either way.
+    const token = localStorage.getItem('token');
+    fetch(REPORTS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        location: { type: 'Point', coordinates: targetCoordinates },
+        severity: newWaterLevel,
+        description: description || undefined,
+        photoUrl: imageList[0]?.startsWith('http') ? imageList[0] : '',
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const created = await res.json().catch(() => null);
+        if (created?._id) {
+          setReports(prev => prev.map(rep => rep.id === newReport.id ? { ...rep, backendId: created._id } : rep));
+        }
+      })
+      .catch((error) => console.error('Failed to sync report to backend:', error));
   };
 
   const handleInitiateConfirm = () => {
     setConfirmStep('add_photo');
   };
 
+  // Sync a vote to the shared backend in the background, for reports that
+  // exist there (i.e. came from another user). Purely local reports have no
+  // backendId and are skipped — nothing to sync.
+  const syncVoteToBackend = (reportId: number, vote: 'yes' | 'no') => {
+    const report = reports.find(r => r.id === reportId);
+    if (!report?.backendId) return;
+    const token = localStorage.getItem('token');
+    fetch(`${REPORTS_API_URL}/${report.backendId}/confirm`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ vote }),
+    }).catch((error) => console.error('Failed to sync vote to backend:', error));
+  };
+
   const applyConfirmation = (reportId: number, newPhotoUrl?: string) => {
+    if (userVotes[reportId] !== 'yes') {
+      syncVoteToBackend(reportId, 'yes');
+    }
     setReports(prevReports =>
       prevReports.map(rep => {
         if (rep.id === reportId) {
@@ -749,6 +876,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
   };
 
   const handleDeclineReport = (reportId: number) => {
+    syncVoteToBackend(reportId, 'no');
     setUserVotes(prev => ({ ...prev, [reportId]: 'no' }));
   };
 

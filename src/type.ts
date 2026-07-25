@@ -1,5 +1,8 @@
 export interface FloodReport {
   id: number;
+  // The shared backend's real Mongo _id, when this report exists there —
+  // needed to sync confirm/decline votes back to it.
+  backendId?: string;
   locationName: string;
   area?: string;
   description?: string;
