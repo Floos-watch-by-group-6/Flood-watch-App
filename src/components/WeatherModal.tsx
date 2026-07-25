@@ -4,9 +4,11 @@ interface WeatherModalProps {
   location: string;
   onClose: () => void;
   condition?: WeatherCondition;
+  weather?: ConditionData | null;
+  loading?: boolean;
 }
 
-type IconKind = 'sun' | 'cloud' | 'cloud-light' | 'rain' | 'storm' | 'clearing';
+export type IconKind = 'sun' | 'cloud' | 'cloud-light' | 'rain' | 'storm' | 'clearing';
 
 const NAVY = '#262537';        // temps / headings
 const CLOUD_BLUE = '#0E4567';  // Cute-Blue/500 hourly cloud outline
@@ -119,8 +121,8 @@ function ClockIcon({ size = 15, color = '#9CA3AF' }: { size?: number; color?: st
 }
 
 /* ── Data (one entry per condition; missing conditions fall back to sunny) ── */
-interface HourEntry { label: string; temp: string; icon: IconKind }
-interface ConditionData {
+export interface HourEntry { label: string; temp: string; icon: IconKind }
+export interface ConditionData {
   mainIcon: IconKind;
   temp: string;
   label: string;
@@ -224,8 +226,9 @@ function DetailCard({ icon, label, value }: { icon: React.ReactNode; label: stri
 
 const eyebrow: React.CSSProperties = { fontSize: '12px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.06em' };
 
-export default function WeatherModal({ location, onClose, condition = 'sunny' }: WeatherModalProps) {
-  const data = DATA[condition] ?? DATA.sunny!;
+export default function WeatherModal({ location, onClose, condition = 'sunny', weather, loading }: WeatherModalProps) {
+  const data = weather ?? DATA[condition] ?? DATA.sunny!;
+  const isLoading = loading && !weather;
 
   return (
     <div
@@ -270,6 +273,17 @@ export default function WeatherModal({ location, onClose, condition = 'sunny' }:
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
           <div style={{ width: '40px', height: '5px', borderRadius: '3px', backgroundColor: '#C4C9D1' }} />
         </div>
+
+        <style>{`@keyframes wm-spin { to { transform: rotate(360deg); } }`}</style>
+
+        {isLoading ? (
+          <div style={{ padding: '70px 0 96px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <div style={{ fontSize: '15px', color: '#9CA3AF' }}>{location}</div>
+            <div style={{ width: '34px', height: '34px', border: '3px solid #EEF0F2', borderTopColor: '#0E4567', borderRadius: '50%', animation: 'wm-spin 0.8s linear infinite' }} />
+            <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Fetching weather…</div>
+          </div>
+        ) : (
+        <>
 
         {/* Current weather */}
         <div style={{ textAlign: 'center' }}>
@@ -348,6 +362,8 @@ export default function WeatherModal({ location, onClose, condition = 'sunny' }:
             />
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

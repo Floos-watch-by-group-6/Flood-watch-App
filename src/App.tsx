@@ -16,6 +16,8 @@ import ChangePasswordScreen from './components/ChangePasswordScreen';
 import DeleteAccountModal from './components/DeleteAccountModal';
 import LogoutModal from './components/LogoutModal';
 import WeatherModal from './components/WeatherModal';
+import type { ConditionData } from './components/WeatherModal';
+import { fetchWeather } from './lib/weather';
 import CameraCaptureScreen from './components/CameraCaptureScreen';
 import LocationPreferencesScreen from './components/LocationPreferencesScreen';
 import LocationAccessScreen from './components/LocationAccessScreen';
@@ -127,6 +129,8 @@ export default function App() {
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState<boolean>(false);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
   const [showWeatherModal, setShowWeatherModal] = useState<boolean>(false);
+  const [weatherData, setWeatherData] = useState<ConditionData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
 
   const [mainSearchQuery, setMainSearchQuery] = useState('');
   const [displayedLocation, setDisplayedLocation] = useState('Locating...');
@@ -192,6 +196,24 @@ export default function App() {
     setCurrentUser('');
     setCurrentTab('maps');
     setIsReporting(false);
+  };
+
+  // Open the weather modal and fetch live weather for the currently-viewed map area.
+  const handleOpenWeather = async () => {
+    setShowWeatherModal(true);
+    setWeatherData(null);
+    setWeatherLoading(true);
+    try {
+      const center = mapRef.current?.getCenter();
+      const lat = center ? center.lat : (currentCoordsRef.current ? currentCoordsRef.current[1] : 6.47);
+      const lng = center ? center.lng : (currentCoordsRef.current ? currentCoordsRef.current[0] : 3.58);
+      const data = await fetchWeather(lat, lng);
+      setWeatherData(data);
+    } catch {
+      setWeatherData(null); // falls back to the static preview inside the modal
+    } finally {
+      setWeatherLoading(false);
+    }
   };
 
   const getUserInitials = (name: string) => {
@@ -755,6 +777,8 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         <WeatherModal
           location={displayedLocation && displayedLocation !== 'Locating...' ? displayedLocation : 'Ajah, Lagos'}
           onClose={() => setShowWeatherModal(false)}
+          weather={weatherData}
+          loading={weatherLoading}
         />
       )}
 
@@ -925,7 +949,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             setCapturedImages={setCapturedImages} setCurrentTab={setCurrentTab} setReportingStage={setReportingStage}
             handleMainSearchSubmit={handleMainSearchSubmit} displayedLocation={displayedLocation}
             mainSearchQuery={mainSearchQuery} setMainSearchQuery={setMainSearchQuery} currentUser={currentUser} getUserInitials={getUserInitials}
-            onOpenWeather={() => setShowWeatherModal(true)}
+            onOpenWeather={handleOpenWeather}
           />
         )}
 
