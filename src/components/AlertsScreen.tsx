@@ -228,22 +228,23 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
         backgroundColor: '#FFFFFF',
         zIndex: 10,
         padding: '52px 16px 20px 16px',
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
-        justifyContent: 'space-between',
       }}>
         <img
           src={floodwatchLogo}
           alt="Floodwatch"
           width={32}
           height={32}
-          style={{ display: 'block' }}
+          style={{ display: 'block', justifySelf: 'start' }}
         />
-        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#111827' }}>Alerts</h1>
+        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#111827', textAlign: 'center' }}>Alerts</h1>
         <button
           onClick={markAllRead}
           disabled={!hasUnread}
           style={{
+            justifySelf: 'end',
             border: 'none',
             background: 'none',
             padding: 0,
@@ -252,6 +253,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
             color: hasUnread ? '#111827' : '#C4C9D1',
             cursor: hasUnread ? 'pointer' : 'default',
             transition: 'color 0.2s ease',
+            whiteSpace: 'nowrap',
           }}
         >
           Mark all read

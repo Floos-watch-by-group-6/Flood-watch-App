@@ -103,7 +103,7 @@ export default function BottomNav({
           flexDirection: 'column',
           alignItems: 'center',
           gap: '2px',
-          boxShadow: '0px 6px 14px rgba(253, 95, 83, 0.35)',
+          boxShadow: 'inset 0 0 0 2px #FFFFFF, 0px 6px 14px rgba(253, 95, 83, 0.35)',
           fontFamily: 'inherit',
         }}
       >
