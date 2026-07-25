@@ -137,10 +137,12 @@ type TabType = 'maps' | 'feed' | 'report' | 'alerts' | 'profile';
 type ConfirmStep = 'initial' | 'add_photo' | 'confirmed_view';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<string>('');
+  // Restore the session from a previous sign-in so a page refresh doesn't
+  // bounce the user back to the Auth screen.
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem('token'));
+  const [currentUser, setCurrentUser] = useState<string>(() => localStorage.getItem('currentUser') || '');
   const accountPhone = '+234 801 234 5678';
-  const [accountEmail, setAccountEmail] = useState<string>('');
+  const [accountEmail, setAccountEmail] = useState<string>(() => localStorage.getItem('accountEmail') || '');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const geolocateControlRef = useRef<maplibregl.GeolocateControl | null>(null);
@@ -308,14 +310,22 @@ export default function App() {
   const [userVotes, setUserVotes] = useState<Record<number, 'yes' | 'no'>>({});
 
   const handleAuthComplete = (username: string, isNewSignup?: boolean, email?: string) => {
-    setCurrentUser(username || 'User');
-    if (email) setAccountEmail(email);
+    const resolvedUsername = username || 'User';
+    setCurrentUser(resolvedUsername);
+    localStorage.setItem('currentUser', resolvedUsername);
+    if (email) {
+      setAccountEmail(email);
+      localStorage.setItem('accountEmail', email);
+    }
     setIsAuthenticated(true);
     setCurrentTab('maps');
     if (isNewSignup) setShowLocationPermissionModal(true);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('accountEmail');
     setIsAuthenticated(false);
     setCurrentUser('');
     setCurrentTab('maps');
