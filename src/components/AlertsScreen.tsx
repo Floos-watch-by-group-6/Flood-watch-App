@@ -208,7 +208,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
       backgroundColor: '#F6F7F8',
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       overflowY: 'auto',
       zIndex: 2,
     }}>

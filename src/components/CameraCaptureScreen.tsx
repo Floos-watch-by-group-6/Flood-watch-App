@@ -105,7 +105,7 @@ export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack 
       backgroundColor: '#000000',
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>
       {mode === 'live' ? (
         <>

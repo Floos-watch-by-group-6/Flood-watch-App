@@ -15,7 +15,7 @@ export default function PhotoPermissionModal({ onSelectPhotos, onAllowAll, onDon
     color: '#007AFF',
     fontSize: '19px',
     fontWeight: 400,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     cursor: 'pointer',
     textAlign: 'center',
   };
@@ -40,7 +40,7 @@ export default function PhotoPermissionModal({ onSelectPhotos, onAllowAll, onDon
         backgroundColor: '#F1F1F5',
         borderRadius: '30px',
         overflow: 'hidden',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         boxShadow: '0px 20px 50px rgba(0, 0, 0, 0.3)',
       }}>
         <div style={{ padding: '26px 18px 22px 18px', textAlign: 'center' }}>

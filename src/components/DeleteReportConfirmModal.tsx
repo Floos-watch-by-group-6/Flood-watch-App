@@ -27,7 +27,7 @@ export default function DeleteReportConfirmModal({ onConfirm, onCancel }: Delete
           backgroundColor: '#F3F4F6',
           borderRadius: '24px',
           padding: '28px 24px',
-          fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           boxShadow: '0px 20px 50px rgba(0, 0, 0, 0.25)',
         }}
       >

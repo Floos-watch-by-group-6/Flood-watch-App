@@ -92,7 +92,7 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
         backgroundColor: '#F6F7F9',
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         zIndex: 15,
         animation: 'postDetailIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both',
       }}

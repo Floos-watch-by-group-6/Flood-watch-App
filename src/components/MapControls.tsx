@@ -73,7 +73,7 @@ export default function MapControls({ handleRecenterLocation, handleInfoClick }:
               borderRadius: '28px',
               padding: '28px 26px',
               boxShadow: '0px 24px 60px rgba(0, 0, 0, 0.22)',
-              fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+              fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               boxSizing: 'border-box',
             }}
           >

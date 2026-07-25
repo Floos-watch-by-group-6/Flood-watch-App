@@ -1,24 +1,122 @@
+/* ==========================================================================
+   FloodWatch Design System — tokens
+   Source: FloodWatch Design System — Developer Handoff (Figma eine9ckfdOIPrSkTeUUJrk)
+   Typeface Outfit is loaded via Google Fonts in index.html.
+   ========================================================================== */
+:root {
+  /* Typeface */
+  --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Primary brand */
+  --color-flame: #FD5F53;
+
+  /* Cute-Blue (splash gradient + deep brand navy) */
+  --cute-blue-50: #CFDAE1;
+  --cute-blue-100: #AFC1CC;
+  --cute-blue-200: #86A2B3;
+  --cute-blue-300: #5E839A;
+  --cute-blue-400: #366480;
+  --cute-blue-500: #0E4567;
+  --cute-blue-600: #0C3956;
+  --cute-blue-700: #092E45;
+  --cute-blue-800: #072233;
+  --cute-blue-900: #051722;
+  --cute-blue-950: #030E15;
+
+  /* Blue */
+  --blue-50: #D1D1D8;
+  --blue-100: #B3B3BD;
+  --blue-200: #8C8D9C;
+  --blue-300: #66677C;
+  --blue-400: #40415B;
+  --blue-500: #1A1B3A;
+  --blue-600: #161630;
+  --blue-700: #111227;
+  --blue-800: #0D0D1D;
+  --blue-900: #090913;
+  --blue-950: #05050C;
+
+  /* Dirty-Blue */
+  --dirty-blue-50: #D4D3D7;
+  --dirty-blue-100: #B7B6BC;
+  --dirty-blue-200: #92929B;
+  --dirty-blue-300: #6E6E7A;
+  --dirty-blue-400: #4A4958;
+  --dirty-blue-500: #262537;
+  --dirty-blue-600: #201F2E;
+  --dirty-blue-700: #191925;
+  --dirty-blue-800: #13121B;
+  --dirty-blue-900: #0D0C12;
+  --dirty-blue-950: #08070B;
+
+  /* Green */
+  --green-50: #DEF4EF;
+  --green-100: #C8EDE5;
+  --green-200: #ADE3D7;
+  --green-300: #92DACA;
+  --green-400: #76D1BD;
+  --green-500: #5BC8B0;
+  --green-600: #4CA793;
+  --green-700: #3D8575;
+  --green-800: #2D6458;
+  --green-900: #1E433B;
+  --green-950: #122823;
+
+  /* Orange */
+  --orange-50: #FFE8E1;
+  --orange-100: #FFD9CE;
+  --orange-200: #FFC6B5;
+  --orange-300: #FFB39C;
+  --orange-400: #FFA084;
+  --orange-500: #FF8D6B;
+  --orange-600: #D47559;
+  --orange-700: #AA5E47;
+  --orange-800: #7F4635;
+  --orange-900: #552F24;
+  --orange-950: #331C15;
+
+  /* Off-White */
+  --off-white-50: #FEFEFE;
+  --off-white-100: #FDFDFD;
+  --off-white-200: #FCFCFC;
+  --off-white-300: #FAFAFA;
+  --off-white-400: #F9F9F9;
+  --off-white-500: #F8F8F8;
+  --off-white-600: #CFCFCF;
+  --off-white-700: #A5A5A5;
+  --off-white-800: #7C7C7C;
+  --off-white-900: #535353;
+  --off-white-950: #323232;
+
+  /* Splash gradient */
+  --gradient-splash: linear-gradient(180deg, var(--cute-blue-400) 0%, var(--cute-blue-800) 100%);
+
+  /* Radius scale (buttons + cards share 24px per handoff §5) */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-button: 24px;
+  --radius-card: 24px;
+  --radius-pill: 999px;
+
+  /* Spacing — 4px system (handoff §3) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Elevation — mirrors current app shadows pending exact Figma export (handoff §4) */
+  --elevation-1: 0px 6px 20px rgba(17, 24, 39, 0.05);
+  --elevation-2: 0px 4px 12px rgba(0, 0, 0, 0.12);
+  --elevation-3: 0px 12px 32px rgba(0, 0, 0, 0.18);
+}
+
 /* Base resets */
-@font-face {
-  font-family: "Euclid";
-  src: url("./assets/fonts/EuclidCircularA-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Euclid";
-  src: url("./assets/fonts/EuclidCircularA-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Euclid";
-  src: url("./assets/fonts/EuclidCircularA-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-}
 html, body, #root {
   margin: 0;
   padding: 0;
@@ -53,8 +151,20 @@ html, body, #root {
     box-shadow: none !important;
   }
 }
-body{
-   font-family: "Euclid", sans-serif;
+body {
+  font-family: var(--font-sans);
+  /* Handoff §1 letter-spacing rule: -0.5px at 14px and above (the dominant
+     case across the app). Sub-14px caption utilities override this below. */
+  letter-spacing: -0.5px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Handoff §1: styles below 14px (Caption 1/2 — 10px/12px) open up to +0.5px
+   for small-size legibility. Apply .ds-caption to any sub-14px text. */
+.ds-caption {
+  letter-spacing: 0.5px;
 }
 /* Custom Circular Photo Pins */
 .photo-marker {
@@ -324,7 +434,7 @@ body{
   width: 402px;
   height: 100%;
   background-color: #FFFFFF;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   padding: 24px 20px;
   box-sizing: border-box;
   color: #121212;

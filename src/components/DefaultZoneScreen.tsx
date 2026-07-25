@@ -112,7 +112,7 @@ export default function DefaultZoneScreen({ initialZone, onBack, onSave }: Defau
       inset: 0,
       zIndex: 2,
       backgroundColor: '#E8E4DC',
-      fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>
       <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0 }} />
 

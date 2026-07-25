@@ -152,7 +152,7 @@ export default function FeedScreen({
         backgroundColor: '#F4F5F6',
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         overflowY: 'auto',
         zIndex: 2,
       }}>

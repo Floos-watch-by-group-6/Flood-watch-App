@@ -32,7 +32,7 @@ export default function PhoneEditScreen({ currentPhone, onBack }: PhoneEditScree
       backgroundColor: '#F6F7F8',
       overflowY: 'auto',
       zIndex: 2,
-      fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     }}>
       <WatermarkLayer />
 

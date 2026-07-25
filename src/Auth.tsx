@@ -142,7 +142,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#091b29',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+      fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
     }}>
       {/* Dynamic Keyframe Animations */}
       <style>{`
@@ -189,10 +189,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
           fontSize: '14px',
           fontWeight: '600',
           color: step === 'splash' ? '#FFFFFF' : '#111827',
-          backgroundColor: step === 'splash' ? '#091b29' : '#FFFFFF',
+          backgroundColor: step === 'splash' ? '#366480' : '#FFFFFF',
           transition: 'all 0.3s ease'
         }}>
-          
+
         </div>
 
         {/* ----------------- 1. SPLASH SCREEN ----------------- */}
@@ -203,7 +203,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
             alignItems: 'center',
             justifyContent: 'center',
             flex: 1,
-            backgroundColor: '#091b29'
+            background: 'linear-gradient(180deg, #366480 0%, #072233 100%)'
           }}>
             <div
               style={{
@@ -359,7 +359,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
             flex: 1,
             padding: '52px 24px 24px 24px',
             backgroundColor: '#FFFFFF',
-            fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '44px' }}>

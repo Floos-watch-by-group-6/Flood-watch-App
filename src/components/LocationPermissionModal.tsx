@@ -15,7 +15,7 @@ export default function LocationPermissionModal({ onAllowOnce, onAllowWhileUsing
     color: '#007AFF',
     fontSize: '19px',
     fontWeight: 400,
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     cursor: 'pointer',
     textAlign: 'center',
   };
@@ -38,7 +38,7 @@ export default function LocationPermissionModal({ onAllowOnce, onAllowWhileUsing
         borderTopLeftRadius: '32px',
         borderTopRightRadius: '32px',
         overflow: 'hidden',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         boxShadow: '0px -10px 40px rgba(0, 0, 0, 0.3)',
       }}>
         <div style={{ padding: '34px 22px 18px 22px', textAlign: 'center' }}>

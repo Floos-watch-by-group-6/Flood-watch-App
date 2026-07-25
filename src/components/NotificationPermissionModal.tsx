@@ -13,7 +13,7 @@ export default function NotificationPermissionModal({ onDontAllow, onOk }: Notif
     background: 'none',
     color: '#007AFF',
     fontSize: '19px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     cursor: 'pointer',
     textAlign: 'center',
   };
@@ -38,7 +38,7 @@ export default function NotificationPermissionModal({ onDontAllow, onOk }: Notif
         backgroundColor: '#F1F1F5',
         borderRadius: '20px',
         overflow: 'hidden',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         boxShadow: '0px 20px 50px rgba(0, 0, 0, 0.3)',
       }}>
         <div style={{ padding: '26px 20px 22px 20px', textAlign: 'center' }}>

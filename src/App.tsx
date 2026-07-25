@@ -449,13 +449,13 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
       const labelEl = document.createElement('div');
       labelEl.innerText = report.locationName;
-      labelEl.style.cssText = 'margin-top:8px;font-family:"Euclid",-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:14px;line-height:1.2;color:#111827;text-align:center;white-space:nowrap;text-shadow:0 0 6px #FFFFFF, 0 0 6px #FFFFFF, 0 0 6px #FFFFFF;';
+      labelEl.style.cssText = 'margin-top:8px;font-family:"Outfit",-apple-system,BlinkMacSystemFont,sans-serif;font-weight:700;font-size:14px;line-height:1.2;color:#111827;text-align:center;white-space:nowrap;text-shadow:0 0 6px #FFFFFF, 0 0 6px #FFFFFF, 0 0 6px #FFFFFF;';
       columnEl.appendChild(labelEl);
 
       if (!isVerified) {
         const pillEl = document.createElement('div');
         pillEl.innerText = `${report.confirmations}/${VERIFICATION_THRESHOLD} confirmed`;
-        pillEl.style.cssText = 'margin-top:8px;background:#FFFFFF;border-radius:999px;padding:7px 16px;font-family:"Euclid",-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;font-weight:700;color:#111827;box-shadow:0 4px 10px rgba(0,0,0,0.15);white-space:nowrap;';
+        pillEl.style.cssText = 'margin-top:8px;background:#FFFFFF;border-radius:999px;padding:7px 16px;font-family:"Outfit",-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;font-weight:700;color:#111827;box-shadow:0 4px 10px rgba(0,0,0,0.15);white-space:nowrap;';
         columnEl.appendChild(pillEl);
       }
 
@@ -1188,7 +1188,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               overflowY: 'auto',
               boxShadow: '0px -12px 32px rgba(0, 0, 0, 0.18)',
               zIndex: 10,
-              fontFamily: 'sans-serif',
+              fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               animation: 'sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both',
             }}
           >
@@ -1585,7 +1585,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               overflowY: 'auto',
               boxShadow: '0px -12px 32px rgba(0, 0, 0, 0.18)',
               zIndex: 10,
-              fontFamily: 'sans-serif',
+              fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               animation: 'sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both',
             }}
           >
@@ -1767,7 +1767,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   inset: 0,
                   backgroundColor: '#FFFFFF',
                   zIndex: 10,
-                  fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                   display: 'flex',
                   flexDirection: 'column',
                 }}
@@ -1973,7 +1973,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   inset: 0,
                   backgroundColor: '#FFFFFF',
                   zIndex: 10,
-                  fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                   display: 'flex',
                   flexDirection: 'column',
                 }}

@@ -24,7 +24,7 @@ export default function DeletePostMenu({ onDeletePost, onClose }: DeletePostMenu
           backgroundColor: '#FFFFFF',
           borderTopLeftRadius: '24px',
           borderTopRightRadius: '24px',
-          fontFamily: '"Euclid", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
           boxShadow: '0px -10px 40px rgba(0, 0, 0, 0.25)',
           animation: 'sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1) both',
           paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
