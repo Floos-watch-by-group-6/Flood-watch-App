@@ -3,11 +3,13 @@ import './Auth.css';
 import floodwatchLogo from './assets/Floodwatchlogo.svg';
 import splashIcon from './assets/Frame 2147229111.svg';
 
+const API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/auth';
+
 interface AuthProps {
   onAuthComplete: (username: string, isNewSignup?: boolean, email?: string) => void;
 }
 
-type AuthStep = 'splash' | 'landing' | 'signin' | 'signup';
+type AuthStep = 'splash' | 'landing' | 'signin' | 'signup' | 'forgot-password' | 'verify-reset-otp' | 'reset-password';
 type SignUpSubStep = 1 | 2 | 3 | 'otp';
 
 export default function Auth({ onAuthComplete }: AuthProps) {
@@ -33,6 +35,25 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [resendMessage, setResendMessage] = useState('');
 
+  // Backend request state
+  const [submitting, setSubmitting] = useState(false);
+  const [signInError, setSignInError] = useState('');
+  const [signUpError, setSignUpError] = useState('');
+  const [otpError, setOtpError] = useState('');
+
+  // Forgot / Reset Password States
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmailError, setForgotEmailError] = useState('');
+  const [resetOtp, setResetOtp] = useState(['', '', '', '', '', '']);
+  const [resetOtpError, setResetOtpError] = useState('');
+  const [resetResendMessage, setResetResendMessage] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [resetPasswordError, setResetPasswordError] = useState('');
+  const [showResetSuccessModal, setShowResetSuccessModal] = useState(false);
+
   // Sequenced splash animation: icon alone -> divider grows in -> wordmark fades in -> hand off to sign in
   useEffect(() => {
     if (step !== 'splash') return;
@@ -52,6 +73,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   // Email input handler for Sign In
   const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (emailError) setEmailError('');
+    if (signInError) setSignInError('');
     setEmail(e.target.value);
   };
 
@@ -76,6 +98,13 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const hasNumber = /[0-9]/.test(signUpPassword);
   const isStep2Valid = hasMinLength && hasUppercase && hasNumber;
 
+  // Reset-password criteria check
+  const newPasswordHasMinLength = newPassword.length >= 8;
+  const newPasswordHasUppercase = /[A-Z]/.test(newPassword);
+  const newPasswordHasNumber = /[0-9]/.test(newPassword);
+  const isNewPasswordValid = newPasswordHasMinLength && newPasswordHasUppercase && newPasswordHasNumber;
+  const isResetPasswordFormValid = isNewPasswordValid && confirmNewPassword.length > 0 && newPassword === confirmNewPassword;
+
   // Mask Email for OTP Screen
   const maskedEmail = (() => {
     const [localPart, domain] = signUpEmail.split('@');
@@ -83,16 +112,34 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     return localPart.slice(0, 2) + '****@' + domain;
   })();
 
-  // Handle Login Submission
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  // Handle Login Submission (backend)
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateEmail(email)) {
       setEmailError('Please enter a valid email address.');
       return;
     }
     setEmailError('');
-    const username = email.split('@')[0];
-    onAuthComplete(username || 'user', false, email.trim());
+    setSignInError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password: signInPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSignInError(data.message || 'Unable to sign in. Please try again.');
+        return;
+      }
+      if (data.token) localStorage.setItem('token', data.token);
+      onAuthComplete(data.user?.name || data.name || email.split('@')[0] || 'user', false, email.trim());
+    } catch {
+      setSignInError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Handle Step 1 Submission
@@ -120,19 +167,217 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     }
   };
 
-  // Create the account locally — no external service involved.
-  const handleCreateAccount = () => {
-    setSignUpSubStep('otp');
+  // Create the account on the backend, then move to OTP verification.
+  const handleCreateAccount = async () => {
+    if (!agreedToTerms) return;
+    setSignUpError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: signUpUsername.trim(),
+          email: signUpEmail.trim(),
+          password: signUpPassword,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSignUpError(data.message || 'Unable to create account. Please try again.');
+        return;
+      }
+      setOtp(['', '', '', '', '', '']);
+      setOtpError('');
+      setResendMessage('');
+      setSignUpSubStep('otp');
+    } catch {
+      setSignUpError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // OTP entry is not verified — any 6 digits proceed straight through.
-  const handleVerifyOtp = () => {
-    const username = signUpUsername.trim() || 'user';
-    onAuthComplete(username, true, signUpEmail.trim());
+  // Verify the emailed OTP against the backend, then enter the app.
+  const handleVerifyOtp = async () => {
+    const code = otp.join('');
+    if (code.length !== 6) {
+      setOtpError('Please enter the 6-digit code.');
+      return;
+    }
+    setOtpError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signUpEmail.trim(), otp: code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(data.message || 'Invalid or expired code. Please try again.');
+        return;
+      }
+      if (data.token) localStorage.setItem('token', data.token);
+      onAuthComplete(data.user?.name || data.name || signUpUsername.trim() || 'user', true, signUpEmail.trim());
+    } catch {
+      setOtpError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleResendOtp = () => {
-    setResendMessage('A new code has been sent.');
+  const handleResendOtp = async () => {
+    setOtpError('');
+    setResendMessage('');
+    try {
+      const res = await fetch(`${API_URL}/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signUpEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(data.message || 'Unable to resend the code.');
+        return;
+      }
+      setResendMessage('A new code has been sent.');
+    } catch {
+      setOtpError('Unable to connect to the server.');
+    }
+  };
+
+  // Reset-OTP digit changes
+  const handleResetOtpChange = (index: number, value: string) => {
+    if (value.length > 1) value = value.slice(-1);
+    const next = [...resetOtp];
+    next[index] = value;
+    setResetOtp(next);
+
+    if (value && index < 5) {
+      const nextInput = document.getElementById(`reset-otp-input-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  // Step 1: request a reset code for the given email (backend).
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateEmail(forgotEmail)) {
+      setForgotEmailError('Please enter a valid email address.');
+      return;
+    }
+    setForgotEmailError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setForgotEmailError(data.message || 'Unable to send reset code. Please try again.');
+        return;
+      }
+      setResetOtp(['', '', '', '', '', '']);
+      setResetOtpError('');
+      setResetResendMessage('');
+      setStep('verify-reset-otp');
+    } catch {
+      setForgotEmailError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Step 2: verify the emailed reset code (backend).
+  const handleVerifyResetOtp = async () => {
+    const code = resetOtp.join('');
+    if (code.length !== 6) {
+      setResetOtpError('Please enter the 6-digit code.');
+      return;
+    }
+    setResetOtpError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/verify-reset-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim(), otp: code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResetOtpError(data.message || 'Invalid or expired code. Please try again.');
+        return;
+      }
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setResetPasswordError('');
+      setStep('reset-password');
+    } catch {
+      setResetOtpError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResendResetOtp = async () => {
+    setResetOtpError('');
+    setResetResendMessage('');
+    try {
+      const res = await fetch(`${API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResetOtpError(data.message || 'Unable to resend the code.');
+        return;
+      }
+      setResetResendMessage('A new code has been sent.');
+    } catch {
+      setResetOtpError('Unable to connect to the server.');
+    }
+  };
+
+  // Step 3: submit the new password (backend), then show the success modal.
+  const handleResetPasswordSubmit = async () => {
+    if (!isResetPasswordFormValid) return;
+    setResetPasswordError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotEmail.trim(),
+          otp: resetOtp.join(''),
+          newPassword,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setResetPasswordError(data.message || 'Unable to reset password. Please try again.');
+        return;
+      }
+      setShowResetSuccessModal(true);
+    } catch {
+      setResetPasswordError('Unable to connect to the server. Check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // After the success modal, return to sign-in with a clean slate.
+  const handleReturnToSignIn = () => {
+    setShowResetSuccessModal(false);
+    setForgotEmail('');
+    setResetOtp(['', '', '', '', '', '']);
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setStep('signin');
   };
 
   return (
@@ -478,29 +723,42 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                 </div>
 
                 <div style={{ textAlign: 'right', marginTop: '-10px' }}>
-                  <a href="#forgot" style={{ fontSize: '15px', color: '#003366', textDecoration: 'none', fontWeight: '600' }}>
+                  <span
+                    onClick={() => {
+                      setForgotEmail(email);
+                      setForgotEmailError('');
+                      setStep('forgot-password');
+                    }}
+                    style={{ fontSize: '15px', color: '#003366', textDecoration: 'none', fontWeight: '600', cursor: 'pointer' }}
+                  >
                     Forgot password?
-                  </a>
+                  </span>
                 </div>
+
+                {signInError && (
+                  <p style={{ margin: '0', fontSize: '13px', color: '#EF4444', textAlign: 'center' }}>
+                    {signInError}
+                  </p>
+                )}
 
                 <button
                   type="submit"
-                  disabled={!isSignInActive}
+                  disabled={!isSignInActive || submitting}
                   style={{
                     width: '100%',
                     padding: '17px',
                     borderRadius: '999px',
-                    backgroundColor: isSignInActive ? '#003366' : '#8DA4B8',
+                    backgroundColor: isSignInActive && !submitting ? '#003366' : '#8DA4B8',
                     color: '#FFFFFF',
                     border: 'none',
                     fontWeight: '700',
                     fontSize: '17px',
-                    cursor: isSignInActive ? 'pointer' : 'not-allowed',
+                    cursor: isSignInActive && !submitting ? 'pointer' : 'not-allowed',
                     marginTop: '10px',
                     transition: 'background-color 0.25s ease, cursor 0.25s ease'
                   }}
                 >
-                  Sign in
+                  {submitting ? 'Signing in…' : 'Sign in'}
                 </button>
               </form>
             </div>
@@ -517,6 +775,494 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                 Create Account
               </span>
             </p>
+          </div>
+        )}
+
+        {/* ----------------- FORGOT PASSWORD: EMAIL ----------------- */}
+        {step === 'forgot-password' && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            padding: '52px 24px 24px 24px',
+            backgroundColor: '#FFFFFF',
+          }}>
+            <button
+              type="button"
+              onClick={() => setStep('signin')}
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#111827',
+                marginBottom: '40px',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <h1 style={{
+              fontSize: '26px',
+              fontWeight: '700',
+              color: '#111827',
+              textAlign: 'center',
+              margin: '0 0 20px 0',
+              letterSpacing: '-0.01em',
+            }}>
+              Forgot password
+            </h1>
+
+            <p style={{ fontSize: '15px', color: '#6B7280', textAlign: 'center', lineHeight: '1.5', margin: '0 0 36px 0' }}>
+              Enter the email associated with your account and we'll send a code to the email to reset your password.
+            </p>
+
+            <form onSubmit={handleForgotPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <label style={{ fontSize: '14px', color: '#111827', fontWeight: '600' }}>
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => {
+                  if (forgotEmailError) setForgotEmailError('');
+                  setForgotEmail(e.target.value);
+                }}
+                placeholder="Email address"
+                required
+                style={{
+                  width: '100%',
+                  padding: '16px 20px',
+                  borderRadius: '12px',
+                  border: forgotEmailError ? '1.5px solid #EF4444' : '1.5px solid #E5E7EB',
+                  backgroundColor: '#FFFFFF',
+                  fontSize: '16px',
+                  color: '#111827',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  fontFamily: 'inherit',
+                }}
+              />
+              {forgotEmailError && (
+                <span style={{ fontSize: '12px', color: '#EF4444' }}>
+                  {forgotEmailError}
+                </span>
+              )}
+
+              <button
+                type="submit"
+                disabled={!forgotEmail.trim() || submitting}
+                style={{
+                  width: '100%',
+                  padding: '17px',
+                  borderRadius: '999px',
+                  backgroundColor: forgotEmail.trim() && !submitting ? '#003366' : '#8DA4B8',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontWeight: '700',
+                  fontSize: '17px',
+                  cursor: forgotEmail.trim() && !submitting ? 'pointer' : 'not-allowed',
+                  marginTop: '26px',
+                  transition: 'background-color 0.25s ease',
+                }}
+              >
+                {submitting ? 'Sending…' : 'Send'}
+              </button>
+            </form>
+
+            <p style={{ textAlign: 'center', fontSize: '15px', color: '#6B7280', margin: '24px 0 12px 0' }}>
+              Don't have an account?{' '}
+              <span
+                onClick={() => {
+                  setStep('signup');
+                  setSignUpSubStep(1);
+                }}
+                style={{ color: '#003366', fontWeight: '700', cursor: 'pointer' }}
+              >
+                Create Account
+              </span>
+            </p>
+          </div>
+        )}
+
+        {/* ----------------- FORGOT PASSWORD: VERIFY CODE ----------------- */}
+        {step === 'verify-reset-otp' && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            padding: '52px 24px 24px 24px',
+            backgroundColor: '#FFFFFF',
+          }}>
+            <button
+              type="button"
+              onClick={() => setStep('forgot-password')}
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#111827',
+                marginBottom: '40px',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <h1 style={{
+              fontSize: '26px',
+              fontWeight: '700',
+              color: '#111827',
+              textAlign: 'center',
+              margin: '0 0 28px 0',
+              letterSpacing: '-0.01em',
+            }}>
+              Forgot password
+            </h1>
+
+            <p style={{ fontSize: '16px', color: '#9CA3AF', fontWeight: '600', textAlign: 'center', margin: '0 0 24px 0' }}>
+              Enter Verification code
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+              {resetOtp.map((digit, idx) => (
+                <input
+                  key={idx}
+                  id={`reset-otp-input-${idx}`}
+                  type="text"
+                  maxLength={1}
+                  placeholder="0"
+                  value={digit}
+                  onChange={(e) => handleResetOtpChange(idx, e.target.value)}
+                  style={{
+                    width: '48px',
+                    height: '58px',
+                    borderRadius: '14px',
+                    border: '1.5px solid #E5E7EB',
+                    backgroundColor: '#FFFFFF',
+                    textAlign: 'center',
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: '#111827',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              ))}
+            </div>
+
+            {resetOtpError && (
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#EF4444', margin: '0 0 14px 0' }}>
+                {resetOtpError}
+              </p>
+            )}
+
+            <p style={{ textAlign: 'center', margin: '0 0 28px 0' }}>
+              <span style={{ fontSize: '15px', color: '#6B7280' }}>If you didn't receive a code, </span>
+              <span
+                onClick={handleResendResetOtp}
+                style={{ fontSize: '15px', color: '#003366', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Resend code
+              </span>
+            </p>
+            {resetResendMessage && (
+              <p style={{ textAlign: 'center', fontSize: '13px', color: '#16A34A', margin: '-16px 0 24px 0' }}>
+                {resetResendMessage}
+              </p>
+            )}
+
+            <button
+              type="button"
+              disabled={!resetOtp.every(d => d !== '') || submitting}
+              onClick={handleVerifyResetOtp}
+              style={{
+                width: '100%',
+                padding: '17px',
+                borderRadius: '999px',
+                backgroundColor: resetOtp.every(d => d !== '') && !submitting ? '#003366' : '#8DA4B8',
+                color: '#FFFFFF',
+                border: 'none',
+                fontWeight: '700',
+                fontSize: '17px',
+                cursor: resetOtp.every(d => d !== '') && !submitting ? 'pointer' : 'not-allowed',
+                transition: 'background-color 0.25s ease',
+              }}
+            >
+              {submitting ? 'Verifying…' : 'Verify Code'}
+            </button>
+          </div>
+        )}
+
+        {/* ----------------- FORGOT PASSWORD: NEW PASSWORD ----------------- */}
+        {step === 'reset-password' && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            padding: '52px 24px 24px 24px',
+            backgroundColor: '#FFFFFF',
+          }}>
+            <button
+              type="button"
+              onClick={() => setStep('verify-reset-otp')}
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#111827',
+                marginBottom: '32px',
+                flexShrink: 0,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M15 5l-7 7 7 7" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <h1 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#111827',
+              textAlign: 'center',
+              margin: '0 0 28px 0',
+              letterSpacing: '-0.01em',
+            }}>
+              New password
+            </h1>
+
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleResetPasswordSubmit(); }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+            >
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', color: '#111827', marginBottom: '8px', fontWeight: '600' }}>
+                  New password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '16px 48px 16px 20px',
+                      borderRadius: '12px',
+                      border: '1.5px solid #E5E7EB',
+                      backgroundColor: '#FFFFFF',
+                      fontSize: '16px',
+                      color: '#111827',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    style={{
+                      position: 'absolute', right: '18px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0,
+                      display: 'flex', alignItems: 'center',
+                    }}
+                  >
+                    {showNewPassword ? (
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3l18 18" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.584 10.587a2 2 0 002.829 2.829" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.363 5.365A9.466 9.466 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.523 10.523 0 01-2.02 3.568M6.228 6.228C4.42 7.36 3.036 9.026 2.458 12c.639 2.107 1.936 3.87 3.646 5.043" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', color: '#111827', marginBottom: '8px', fontWeight: '600' }}>
+                  Confirm new password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showConfirmNewPassword ? 'text' : 'password'}
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '16px 48px 16px 20px',
+                      borderRadius: '12px',
+                      border: '1.5px solid #E5E7EB',
+                      backgroundColor: '#FFFFFF',
+                      fontSize: '16px',
+                      color: '#111827',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                    style={{
+                      position: 'absolute', right: '18px', top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0,
+                      display: 'flex', alignItems: 'center',
+                    }}
+                  >
+                    {showConfirmNewPassword ? (
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3l18 18" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M10.584 10.587a2 2 0 002.829 2.829" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.363 5.365A9.466 9.466 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.523 10.523 0 01-2.02 3.568M6.228 6.228C4.42 7.36 3.036 9.026 2.458 12c.639 2.107 1.936 3.87 3.646 5.043" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                {confirmNewPassword.length > 0 && newPassword !== confirmNewPassword && (
+                  <span style={{ fontSize: '12px', color: '#EF4444', marginTop: '6px', display: 'block' }}>
+                    Passwords do not match.
+                  </span>
+                )}
+              </div>
+
+              {/* Password Requirements Card */}
+              <div style={{
+                backgroundColor: '#DDE6ED',
+                borderRadius: '18px',
+                padding: '18px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="9" stroke="#091b29" strokeWidth="1.6" />
+                    <path d="M12 11v5.5" stroke="#091b29" strokeWidth="1.8" strokeLinecap="round" />
+                    <circle cx="12" cy="7.8" r="1" fill="#091b29" />
+                  </svg>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#091b29' }}>Password Requirements</span>
+                </div>
+                <div style={{ fontSize: '14px', color: newPasswordHasMinLength ? '#16A34A' : '#4B5563', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: newPasswordHasMinLength ? '#16A34A' : '#6B7280' }}>•</span> At least 8 characters
+                </div>
+                <div style={{ fontSize: '14px', color: newPasswordHasUppercase ? '#16A34A' : '#4B5563', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: newPasswordHasUppercase ? '#16A34A' : '#6B7280' }}>•</span> One Uppercase letter
+                </div>
+                <div style={{ fontSize: '14px', color: newPasswordHasNumber ? '#16A34A' : '#4B5563', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: newPasswordHasNumber ? '#16A34A' : '#6B7280' }}>•</span> One number
+                </div>
+              </div>
+
+              {resetPasswordError && (
+                <p style={{ margin: '0', fontSize: '13px', color: '#EF4444', textAlign: 'center' }}>
+                  {resetPasswordError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={!isResetPasswordFormValid || submitting}
+                style={{
+                  width: '100%',
+                  padding: '17px',
+                  borderRadius: '999px',
+                  backgroundColor: isResetPasswordFormValid && !submitting ? '#003366' : '#8DA4B8',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontWeight: '700',
+                  fontSize: '17px',
+                  cursor: isResetPasswordFormValid && !submitting ? 'pointer' : 'not-allowed',
+                  transition: 'background-color 0.25s ease',
+                }}
+              >
+                {submitting ? 'Submitting…' : 'Submit'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ----------------- PASSWORD RESET SUCCESS MODAL ----------------- */}
+        {showResetSuccessModal && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: 'rgba(17, 24, 39, 0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+            zIndex: 20,
+          }}>
+            <div style={{
+              width: '100%',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              boxShadow: '0px 20px 40px rgba(0, 0, 0, 0.2)',
+              textAlign: 'center',
+            }}>
+              <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: '0 0 8px 0' }}>
+                Password reset
+              </h2>
+              <p style={{ fontSize: '14px', color: '#9CA3AF', margin: '0 0 22px 0' }}>
+                Password has been changed successfully
+              </p>
+              <button
+                type="button"
+                onClick={handleReturnToSignIn}
+                style={{
+                  width: '100%',
+                  padding: '15px',
+                  borderRadius: '999px',
+                  backgroundColor: '#003366',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontWeight: '700',
+                  fontSize: '15px',
+                  cursor: 'pointer',
+                }}
+              >
+                Log in to Account
+              </button>
+            </div>
           </div>
         )}
 
@@ -975,24 +1721,30 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     </span>
                   </label>
 
+                  {signUpError && (
+                    <p style={{ margin: '0 0 14px 0', fontSize: '13px', color: '#EF4444', textAlign: 'center' }}>
+                      {signUpError}
+                    </p>
+                  )}
+
                   <button
                     type="button"
-                    disabled={!agreedToTerms}
+                    disabled={!agreedToTerms || submitting}
                     onClick={handleCreateAccount}
                     style={{
                       width: '100%',
                       padding: '17px',
                       borderRadius: '999px',
-                      backgroundColor: agreedToTerms ? '#091b29' : '#6C8395',
+                      backgroundColor: agreedToTerms && !submitting ? '#091b29' : '#6C8395',
                       color: '#FFFFFF',
                       border: 'none',
                       fontWeight: '700',
                       fontSize: '17px',
-                      cursor: agreedToTerms ? 'pointer' : 'not-allowed',
+                      cursor: agreedToTerms && !submitting ? 'pointer' : 'not-allowed',
                       transition: 'background-color 0.25s ease'
                     }}
                   >
-                    Create account
+                    {submitting ? 'Creating account…' : 'Create account'}
                   </button>
                 </div>
               )}
@@ -1061,25 +1813,31 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     ))}
                   </div>
 
+                  {otpError && (
+                    <p style={{ textAlign: 'center', fontSize: '13px', color: '#EF4444', margin: '0 0 14px 0' }}>
+                      {otpError}
+                    </p>
+                  )}
+
                   <button
                     type="button"
-                    disabled={!otp.every(d => d !== '')}
+                    disabled={!otp.every(d => d !== '') || submitting}
                     onClick={handleVerifyOtp}
                     style={{
                       width: '100%',
                       padding: '17px',
                       borderRadius: '999px',
-                      backgroundColor: otp.every(d => d !== '') ? '#091b29' : '#6C8395',
+                      backgroundColor: otp.every(d => d !== '') && !submitting ? '#091b29' : '#6C8395',
                       color: '#FFFFFF',
                       border: 'none',
                       fontWeight: '700',
                       fontSize: '17px',
-                      cursor: otp.every(d => d !== '') ? 'pointer' : 'not-allowed',
+                      cursor: otp.every(d => d !== '') && !submitting ? 'pointer' : 'not-allowed',
                       marginBottom: '28px',
                       transition: 'background-color 0.25s ease'
                     }}
                   >
-                    Verify Code
+                    {submitting ? 'Verifying…' : 'Verify Code'}
                   </button>
 
                   <p style={{ textAlign: 'center', fontSize: '15px', color: '#9CA3AF', margin: '0 0 10px 0' }}>
