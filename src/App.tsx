@@ -139,6 +139,9 @@ export default function App() {
   const [newLocationName, setNewLocationName] = useState('Locating...');
   const [currentCoords, setCurrentCoords] = useState<[number, number] | null>(null);
   const currentCoordsRef = useRef<[number, number] | null>(null);
+  // True once the user searches/browses away from their own location, so late
+  // geolocation callbacks don't snap the map + name back to "current location".
+  const userNavigatedRef = useRef<boolean>(false);
   const [isManualLocation, setIsManualLocation] = useState<boolean>(false);
   
   useEffect(() => {
@@ -260,6 +263,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 };
 
   const handleRecenterLocation = () => {
+    userNavigatedRef.current = false; // user explicitly wants their own location back
     if (geolocateControlRef.current) {
       geolocateControlRef.current.trigger();
     } else if (navigator.geolocation) {
@@ -282,17 +286,21 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          if (userNavigatedRef.current) return; // user already searched/browsed away
           const { longitude, latitude } = position.coords;
           setCurrentCoords([longitude, latitude]);
           mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 14 });
           const placeName = await fetchLocationName(longitude, latitude);
+          if (userNavigatedRef.current) return;
           setDisplayedLocation(placeName);
           setNewLocationName(placeName);
         },
         async () => {
+          if (userNavigatedRef.current) return;
           const fallbackCoords: [number, number] = [7.33, 5.29];
           setCurrentCoords(fallbackCoords);
           const placeName = await fetchLocationName(fallbackCoords[0], fallbackCoords[1]);
+          if (userNavigatedRef.current) return;
           setDisplayedLocation(placeName);
           setNewLocationName(placeName);
         },
@@ -366,7 +374,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       positionOptions: {
         enableHighAccuracy: true
       },
-      trackUserLocation: true,
+      trackUserLocation: false,
       showUserLocation: true,
       showAccuracyCircle: true
     });
@@ -376,11 +384,13 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
     // Strongly typed callback replacing explicit `any`
     geolocateControl.on('geolocate', async (position: unknown) => {
+      if (userNavigatedRef.current) return; // don't override a searched/browsed place
       const posObj = position as GeolocationPosition;
       if (posObj?.coords) {
         const { longitude, latitude } = posObj.coords;
         setCurrentCoords([longitude, latitude]);
         const name = await fetchLocationName(longitude, latitude);
+        if (userNavigatedRef.current) return;
         setDisplayedLocation(name);
         setNewLocationName(name);
       }
@@ -514,6 +524,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
   const handleMainSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!mainSearchQuery.trim()) return;
+    userNavigatedRef.current = true; // pin to the searched place; ignore late geolocation
     try {
       const response = await fetch(`https://api.maptiler.com/geocoding/${encodeURIComponent(mainSearchQuery)}.json?key=${MAPTILER_KEY}`);
       const data = (await response.json()) as MapTilerResponse;
