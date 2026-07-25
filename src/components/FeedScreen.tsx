@@ -61,14 +61,14 @@ function toFeedPosts(reports: FloodReport[]): FeedPost[] {
   const SAMPLE_USERNAMES = ['KBSHOGI', 'LekiWatcher', 'FloodAlert', 'AjahReporter', 'VIWatcher'];
   return reports.map((r, i) => ({
     id: r.id,
-    username: SAMPLE_USERNAMES[i % SAMPLE_USERNAMES.length],
+    username: r.reportedBy || SAMPLE_USERNAMES[i % SAMPLE_USERNAMES.length],
     timeAgo: timeAgo(r.createdAt),
     locationName: r.locationName,
     severity: r.waterLevel,
     status: r.status,
     description: "Recovery days hit different when the setup is this clean 🌿☀️",
     images: r.images || (r.imageUrl ? [r.imageUrl] : []),
-    commentCount: (r.id % 9) + 1,
+    commentCount: 0,
     reportedBy: r.reportedBy,
   }));
 }
