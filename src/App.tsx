@@ -790,7 +790,8 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         </div>
       )}
 
-      {!isReporting && currentTab === 'maps' && !selectedReport && !viewingOwnReport && (
+      {!isReporting && currentTab === 'maps' && !selectedReport && !viewingOwnReport
+        && !showReportPostedToast && !showLocationUpdatedToast && !showDefaultZoneUpdatedToast && (
         <MapControls handleRecenterLocation={handleRecenterLocation} />
       )}
 
@@ -961,7 +962,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               justifyContent: 'space-between',
               gap: '14px',
               boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.3)',
-              zIndex: 20,
+              zIndex: 2000,
               pointerEvents: 'auto',
               animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
             }}
@@ -969,17 +970,17 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#FFFFFF', lineHeight: '1.3' }}>
               {toastMessage}
             </p>
-            <div style={{ flexShrink: 0 }}>
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.5"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M11.5 16l3 3 6-6"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1005,7 +1006,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               justifyContent: 'space-between',
               gap: '16px',
               boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
-              zIndex: 25,
+              zIndex: 2000,
               pointerEvents: 'auto',
               animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
             }}
@@ -1019,17 +1020,17 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               </p>
             </div>
             {/* Badge verified icon */}
-            <div style={{ flexShrink: 0 }}>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.5"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M11.5 16l3 3 6-6"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1055,7 +1056,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               justifyContent: 'space-between',
               gap: '16px',
               boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
-              zIndex: 25,
+              zIndex: 2000,
               pointerEvents: 'auto',
               animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
             }}
@@ -1063,17 +1064,17 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Location updated
             </p>
-            <div style={{ flexShrink: 0 }}>
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.5"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M11.5 16l3 3 6-6"
-                  stroke="rgba(255,255,255,0.55)"
+                  stroke="rgba(255,255,255,0.6)"
                   strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1099,7 +1100,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               justifyContent: 'space-between',
               gap: '16px',
               boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
-              zIndex: 25,
+              zIndex: 2000,
               pointerEvents: 'auto',
               animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
             }}
@@ -1107,8 +1108,8 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Password Updated
             </p>
-            <div style={{ flexShrink: 0 }}>
-              <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
                   stroke="rgba(255,255,255,0.6)"
@@ -1143,7 +1144,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               justifyContent: 'space-between',
               gap: '16px',
               boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
-              zIndex: 25,
+              zIndex: 2000,
               pointerEvents: 'auto',
               animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
             }}
@@ -1151,8 +1152,8 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Default Zone Updated
             </p>
-            <div style={{ flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M16 2.667l2.88 2.88 4.053-.48.48 4.053 2.88 2.88-2.88 2.88.48 4.053-4.053-.48L16 21.333l-2.88-2.88-4.053.48.48-4.053-2.88-2.88 2.88-2.88-.48-4.053 4.053.48L16 2.667z"
                   stroke="rgba(255,255,255,0.6)"
