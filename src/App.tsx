@@ -979,6 +979,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         ) : (
           <ProfileScreen
             currentUser={currentUser}
+            location={displayedLocation}
             getUserInitials={getUserInitials}
             onOpenPersonalInfo={() => setProfileSubPage('personalInfo')}
             onOpenPrivacySecurity={() => setProfileSubPage('privacySecurity')}
