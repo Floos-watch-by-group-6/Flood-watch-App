@@ -114,9 +114,12 @@ function ChevronRight() {
   );
 }
 
-function ChevronDown() {
+function ChevronDown({ collapsed }: { collapsed?: boolean }) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+      style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.22s ease', flexShrink: 0 }}
+    >
       <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -182,6 +185,11 @@ interface AlertsScreenProps {
 
 export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProps) {
   const [alerts, setAlerts] = useState<AlertItemData[]>(INITIAL_ALERTS);
+  const [collapsed, setCollapsed] = useState<{ Today: boolean; Yesterday: boolean }>({ Today: false, Yesterday: false });
+
+  const hasUnread = alerts.some(a => a.unread);
+  const toggleSection = (section: 'Today' | 'Yesterday') =>
+    setCollapsed(c => ({ ...c, [section]: !c[section] }));
 
   const markAsRead = (id: number) => {
     setAlerts(prev => prev.map(a => (a.id === id ? { ...a, unread: false } : a)));
@@ -206,7 +214,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: '#F6F7F8',
+      backgroundColor: '#FFFFFF',
       display: 'flex',
       flexDirection: 'column',
       fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -234,14 +242,16 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
         <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#111827' }}>Alerts</h1>
         <button
           onClick={markAllRead}
+          disabled={!hasUnread}
           style={{
             border: 'none',
             background: 'none',
             padding: 0,
             fontSize: '13px',
             fontWeight: '600',
-            color: '#111827',
-            cursor: 'pointer',
+            color: hasUnread ? '#111827' : '#C4C9D1',
+            cursor: hasUnread ? 'pointer' : 'default',
+            transition: 'color 0.2s ease',
           }}
         >
           Mark all read
@@ -250,19 +260,25 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
 
       {/* Alerts List */}
       <div style={{ flex: 1, padding: '4px 16px 140px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '8px 0 16px 0' }}>
+        <div
+          onClick={() => toggleSection('Today')}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '8px 0 16px 0', cursor: 'pointer', userSelect: 'none' }}
+        >
           <span style={{ fontSize: '18px', fontWeight: '500', color: '#9CA3AF' }}>Today</span>
-          <ChevronDown />
+          <ChevronDown collapsed={collapsed.Today} />
         </div>
-        {todayAlerts.map(item => (
+        {!collapsed.Today && todayAlerts.map(item => (
           <AlertRow key={item.id} item={item} onRead={markAsRead} onOpenReport={openReportByLocation} />
         ))}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px 0' }}>
+        <div
+          onClick={() => toggleSection('Yesterday')}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '24px 0 16px 0', cursor: 'pointer', userSelect: 'none' }}
+        >
           <span style={{ fontSize: '18px', fontWeight: '500', color: '#9CA3AF' }}>Yesterday</span>
-          <ChevronDown />
+          <ChevronDown collapsed={collapsed.Yesterday} />
         </div>
-        {yesterdayAlerts.map(item => (
+        {!collapsed.Yesterday && yesterdayAlerts.map(item => (
           <AlertRow key={item.id} item={item} onRead={markAsRead} onOpenReport={openReportByLocation} />
         ))}
       </div>
