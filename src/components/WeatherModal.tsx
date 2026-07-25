@@ -12,6 +12,7 @@ const NAVY = '#262537';        // temps / headings
 const CLOUD_BLUE = '#0E4567';  // Cute-Blue/500 hourly cloud outline
 const CLOUD_STEEL = '#86A2B3'; // Cute-Blue/200 main cloudy glyph
 const CORAL = '#FFA084';       // Orange/400 clearing-up glyph
+const FLAME = '#FD5F53';       // brand red thunderstorm glyph
 const SUN_GRAD = 'url(#wm-sun)';
 
 /* ── Weather glyphs ── */
@@ -51,12 +52,27 @@ function ClearingIcon({ size = 28 }: { size?: number }) {
   );
 }
 
+// Flame-red storm cloud with a lightning bolt and rain.
+function StormIcon({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <path
+        d="M9.5 17.8a5.2 5.2 0 01.5-10.37A6.7 6.7 0 0122.8 8.9h.25a4.55 4.55 0 010 9.1H10a5 5 0 01-.5 0z"
+        stroke={FLAME} strokeWidth="1.9" strokeLinejoin="round"
+      />
+      <path d="M16.6 17.5l-3 4.8h3l-2.6 5" stroke={FLAME} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M11 20.4l-1.4 2.8M22.6 20.4l-1.4 2.8" stroke={FLAME} strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function renderGlyph(kind: IconKind, size: number) {
   switch (kind) {
     case 'sun': return <SunIcon size={size} />;
     case 'cloud': return <CloudIcon size={size} />;
     case 'cloud-light': return <CloudIcon size={size} color={CLOUD_STEEL} />;
     case 'clearing': return <ClearingIcon size={size} />;
+    case 'storm': return <StormIcon size={size} />;
     default: return <CloudIcon size={size} />;
   }
 }
@@ -82,6 +98,16 @@ function AlertCircle({ size = 22, color = '#4B4B57' }: { size?: number; color?: 
   );
 }
 
+function WarningTriangle({ size = 22, color = '#4B4B57' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 4.3L2.7 20a1 1 0 00.86 1.5h16.88a1 1 0 00.86-1.5L12 4.3z" stroke={color} strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M12 10v4.2" stroke={color} strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="12" cy="17.4" r="1" fill={color} />
+    </svg>
+  );
+}
+
 function ClockIcon({ size = 15, color = '#9CA3AF' }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -100,7 +126,7 @@ interface ConditionData {
   label: string;
   feelsLike: string;
   updateTitle: string;
-  updateIcon: 'info' | 'alert';
+  updateIcon: 'info' | 'alert' | 'warning';
   updateText: string;
   hourly: HourEntry[];
   details: { rainChance: string; wind: string; humidity: string; updated: string };
@@ -157,6 +183,23 @@ const DATA: Partial<Record<WeatherCondition, ConditionData>> = {
       { label: '1PM', temp: '24°', icon: 'cloud' },
     ],
     details: { rainChance: '15%', wind: '11 km/h', humidity: '70%', updated: '5 min ago' },
+  },
+  thunderstorm: {
+    mainIcon: 'storm',
+    temp: '25°',
+    label: 'Thunderstorm',
+    feelsLike: 'Feels like 26° · H:26° L:23°',
+    updateTitle: 'Special Weather Statement',
+    updateIcon: 'warning',
+    updateText: 'Storm conditions expected through the evening. Flooding is likely on low-lying roads. Report what you see to help others nearby.',
+    hourly: [
+      { label: 'Now', temp: '25°', icon: 'cloud' },
+      { label: '10PM', temp: '24°', icon: 'cloud' },
+      { label: '11PM', temp: '23°', icon: 'cloud' },
+      { label: '12PM', temp: '23°', icon: 'cloud' },
+      { label: '1PM', temp: '24°', icon: 'cloud' },
+    ],
+    details: { rainChance: '5%', wind: '8 km/h', humidity: '54%', updated: '3 min ago' },
   },
 };
 
@@ -243,9 +286,11 @@ export default function WeatherModal({ location, onClose, condition = 'sunny' }:
 
         {/* Weather update */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '12px' }}>
-          {data.updateIcon === 'alert'
-            ? <AlertCircle size={24} color="#4B4B57" />
-            : <InfoCircle size={24} color="#4B4B57" />}
+          {data.updateIcon === 'warning'
+            ? <WarningTriangle size={24} color="#4B4B57" />
+            : data.updateIcon === 'alert'
+              ? <AlertCircle size={24} color="#4B4B57" />
+              : <InfoCircle size={24} color="#4B4B57" />}
           <span style={{ fontSize: '18px', fontWeight: 600, color: NAVY }}>{data.updateTitle}</span>
         </div>
         <p style={{ margin: 0, fontSize: '14px', color: '#9CA3AF', lineHeight: '1.6' }}>
