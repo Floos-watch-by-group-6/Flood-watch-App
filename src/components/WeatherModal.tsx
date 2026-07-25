@@ -6,10 +6,12 @@ interface WeatherModalProps {
   condition?: WeatherCondition;
 }
 
-type IconKind = 'sun' | 'cloud' | 'rain' | 'storm';
+type IconKind = 'sun' | 'cloud' | 'cloud-light' | 'rain' | 'storm' | 'clearing';
 
 const NAVY = '#262537';        // temps / headings
-const CLOUD_BLUE = '#0E4567';  // Cute-Blue/500 cloud outline
+const CLOUD_BLUE = '#0E4567';  // Cute-Blue/500 hourly cloud outline
+const CLOUD_STEEL = '#86A2B3'; // Cute-Blue/200 main cloudy glyph
+const CORAL = '#FFA084';       // Orange/400 clearing-up glyph
 const SUN_GRAD = 'url(#wm-sun)';
 
 /* ── Weather glyphs ── */
@@ -36,10 +38,25 @@ function CloudIcon({ size = 28, color = CLOUD_BLUE }: { size?: number; color?: s
   );
 }
 
+// Coral sun peeking behind a cloud (clearing up).
+function ClearingIcon({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <circle cx="10.5" cy="10.5" r="4.8" stroke={CORAL} strokeWidth="1.9" />
+      <path
+        d="M11 25.5a5.5 5.5 0 01.5-10.97A6.9 6.9 0 0124.2 15.8h.25a4.75 4.75 0 010 9.5H11.4a5.3 5.3 0 01-.4 0z"
+        fill="#FFFFFF" stroke={CORAL} strokeWidth="1.9" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function renderGlyph(kind: IconKind, size: number) {
   switch (kind) {
     case 'sun': return <SunIcon size={size} />;
     case 'cloud': return <CloudIcon size={size} />;
+    case 'cloud-light': return <CloudIcon size={size} color={CLOUD_STEEL} />;
+    case 'clearing': return <ClearingIcon size={size} />;
     default: return <CloudIcon size={size} />;
   }
 }
@@ -51,6 +68,16 @@ function InfoCircle({ size = 22, color = '#4B4B57' }: { size?: number; color?: s
       <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.7" />
       <path d="M12 11v5.2" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
       <circle cx="12" cy="7.9" r="1" fill={color} />
+    </svg>
+  );
+}
+
+function AlertCircle({ size = 22, color = '#4B4B57' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.7" />
+      <path d="M12 7.5v5" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="16.2" r="1" fill={color} />
     </svg>
   );
 }
@@ -73,6 +100,7 @@ interface ConditionData {
   label: string;
   feelsLike: string;
   updateTitle: string;
+  updateIcon: 'info' | 'alert';
   updateText: string;
   hourly: HourEntry[];
   details: { rainChance: string; wind: string; humidity: string; updated: string };
@@ -85,6 +113,7 @@ const DATA: Partial<Record<WeatherCondition, ConditionData>> = {
     label: 'Sunny',
     feelsLike: 'Feels like 33° · H:32° L:23°',
     updateTitle: 'Weather Update',
+    updateIcon: 'info',
     updateText: 'Clear skies expected for the rest of the day. Flood risk is low right now.',
     hourly: [
       { label: 'Now', temp: '31°', icon: 'sun' },
@@ -94,6 +123,40 @@ const DATA: Partial<Record<WeatherCondition, ConditionData>> = {
       { label: '1PM', temp: '24°', icon: 'cloud' },
     ],
     details: { rainChance: '5%', wind: '8 km/h', humidity: '54%', updated: '3 min ago' },
+  },
+  clearing: {
+    mainIcon: 'clearing',
+    temp: '24°',
+    label: 'Clearing Up',
+    feelsLike: 'Feels like 25° · H:26° L:21°',
+    updateTitle: 'Weather Update',
+    updateIcon: 'alert',
+    updateText: "Rain has stopped. If flooding remains nearby, tap Report to let others know it's still an issue.",
+    hourly: [
+      { label: 'Now', temp: '24°', icon: 'clearing' },
+      { label: '10PM', temp: '25°', icon: 'sun' },
+      { label: '11PM', temp: '25°', icon: 'sun' },
+      { label: '12PM', temp: '23°', icon: 'cloud' },
+      { label: '1PM', temp: '22°', icon: 'cloud' },
+    ],
+    details: { rainChance: '20%', wind: '10 km/h', humidity: '80%', updated: 'Just now' },
+  },
+  cloudy: {
+    mainIcon: 'cloud-light',
+    temp: '26°',
+    label: 'Cloudy',
+    feelsLike: 'Feels like 26° · H:26° L:23°',
+    updateTitle: 'Weather Update',
+    updateIcon: 'alert',
+    updateText: 'Cloudy conditions will continue for the rest of the day. No rain expected. Flood risk is low.',
+    hourly: [
+      { label: 'Now', temp: '25°', icon: 'cloud' },
+      { label: '10PM', temp: '24°', icon: 'cloud' },
+      { label: '11PM', temp: '23°', icon: 'cloud' },
+      { label: '12PM', temp: '23°', icon: 'cloud' },
+      { label: '1PM', temp: '24°', icon: 'cloud' },
+    ],
+    details: { rainChance: '15%', wind: '11 km/h', humidity: '70%', updated: '5 min ago' },
   },
 };
 
@@ -180,7 +243,9 @@ export default function WeatherModal({ location, onClose, condition = 'sunny' }:
 
         {/* Weather update */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '12px' }}>
-          <InfoCircle size={24} color="#4B4B57" />
+          {data.updateIcon === 'alert'
+            ? <AlertCircle size={24} color="#4B4B57" />
+            : <InfoCircle size={24} color="#4B4B57" />}
           <span style={{ fontSize: '18px', fontWeight: 600, color: NAVY }}>{data.updateTitle}</span>
         </div>
         <p style={{ margin: 0, fontSize: '14px', color: '#9CA3AF', lineHeight: '1.6' }}>
