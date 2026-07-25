@@ -83,7 +83,7 @@ export async function fetchWeather(lat: number, lng: number): Promise<ConditionD
     `&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code` +
     `&hourly=temperature_2m,weather_code,precipitation_probability` +
     `&daily=temperature_2m_max,temperature_2m_min` +
-    `&wind_speed_unit=kmh&timezone=auto&forecast_days=1`;
+    `&wind_speed_unit=kmh&timezone=auto&forecast_days=2`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`weather fetch failed: ${res.status}`);
