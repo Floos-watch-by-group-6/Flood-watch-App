@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
+import commentIcon from '../assets/comment.svg';
 import type { FloodReport } from '../type';
 import PostDetailScreen from './PostDetailScreen';
 import DeletePostMenu from './DeletePostMenu';
@@ -45,11 +46,13 @@ function severityLabel(level: 'Low' | 'Medium' | 'High'): string {
   }
 }
 
+// Pill palette matches the pillu.svg asset: text at full colour on a low-opacity
+// tint of the same colour (High = red #F81100 @ 8%, Unverified grey @ 18%).
 function severityColors(level: 'Low' | 'Medium' | 'High'): { bg: string; text: string } {
   switch (level) {
-    case 'High': return { bg: '#FDEBEA', text: '#E5322D' };
-    case 'Medium': return { bg: '#FEF0E1', text: '#E07A1A' };
-    case 'Low': return { bg: '#E8F6EC', text: '#1F9D57' };
+    case 'High': return { bg: 'rgba(248, 17, 0, 0.08)', text: '#F81100' };
+    case 'Medium': return { bg: 'rgba(232, 115, 14, 0.10)', text: '#E8730E' };
+    case 'Low': return { bg: 'rgba(31, 157, 87, 0.10)', text: '#1F9D57' };
   }
 }
 
@@ -149,7 +152,7 @@ export default function FeedScreen({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#F4F5F6',
+        backgroundColor: '#FFFFFF',
         display: 'flex',
         flexDirection: 'column',
         fontFamily: '"Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -160,23 +163,23 @@ export default function FeedScreen({
         <div style={{
           position: 'sticky',
           top: 0,
-          backgroundColor: '#F4F5F6',
+          backgroundColor: '#FFFFFF',
           zIndex: 10,
           padding: '52px 18px 14px 18px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Logo (reduced ~22%) */}
             <div style={{ flexShrink: 0 }}>
               <img
                 src={floodwatchLogo}
                 alt="Floodwatch"
-                width={42}
-                height={29}
+                width={33}
+                height={23}
                 style={{ display: 'block' }}
               />
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar — fills the remaining width, vertically centered with the logo */}
             <form onSubmit={handleMainSearchSubmit} style={{ flex: 1 }}>
               <div style={{
                 display: 'flex',
@@ -184,10 +187,10 @@ export default function FeedScreen({
                 gap: '12px',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '999px',
-                padding: '15px 20px',
+                padding: '14px 18px',
                 boxShadow: '0px 6px 16px rgba(17, 24, 39, 0.06)',
               }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2430" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2430" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="7.5" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -200,7 +203,7 @@ export default function FeedScreen({
                     border: 'none',
                     background: 'transparent',
                     outline: 'none',
-                    fontSize: '17px',
+                    fontSize: '16px',
                     fontWeight: 600,
                     color: '#1F2430',
                     flex: 1,
@@ -283,16 +286,17 @@ function FeedPostCard({
         borderRadius: '24px',
         padding: '18px 20px',
         marginBottom: '16px',
-        boxShadow: '0px 6px 20px rgba(17, 24, 39, 0.05)',
+        border: '1px solid #EFEFEF',
+        boxShadow: 'none',
         cursor: 'pointer',
       }}
     >
       {/* Username row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
-          <span style={{ fontSize: '15px', fontWeight: 600, color: '#6E6E76' }}>@{post.username}</span>
+          <span style={{ fontSize: '14px', fontWeight: 500, color: '#6E6E76' }}>@{post.username}</span>
           <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
-          <span style={{ fontSize: '15px', color: '#9CA0A8' }}>{post.timeAgo}</span>
+          <span style={{ fontSize: '14px', color: '#9CA0A8' }}>{post.timeAgo}</span>
         </div>
 
         {isOwnPost && (
@@ -333,23 +337,23 @@ function FeedPostCard({
         marginBottom: '12px',
         flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>Reported at:</span>
+        <span style={{ fontSize: '15px', fontWeight: 600, color: '#1F2430' }}>Reported at:</span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="#1F2430" strokeWidth="1.8" strokeLinejoin="round" />
             <circle cx="12" cy="9" r="2.5" stroke="#1F2430" strokeWidth="1.8" />
           </svg>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>{post.locationName}</span>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: '#1F2430' }}>{post.locationName}</span>
         </span>
       </div>
 
       {/* Severity + Status badges */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
         <span style={{
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: 600,
-          padding: '5px 12px',
-          borderRadius: '999px',
+          padding: '4px 11px',
+          borderRadius: '8px',
           backgroundColor: sevColors.bg,
           color: sevColors.text,
         }}>
@@ -357,12 +361,12 @@ function FeedPostCard({
         </span>
 
         <span style={{
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: 600,
-          padding: '5px 12px',
-          borderRadius: '999px',
-          backgroundColor: post.status === 'Verified' ? '#DCF3E5' : '#EBECEE',
-          color: post.status === 'Verified' ? '#1F9D57' : '#8A8A93',
+          padding: '4px 11px',
+          borderRadius: '8px',
+          backgroundColor: post.status === 'Verified' ? 'rgba(31, 157, 87, 0.12)' : 'rgba(110, 110, 122, 0.18)',
+          color: post.status === 'Verified' ? '#1F9D57' : '#6E6E7A',
         }}>
           {post.status}
         </span>
@@ -371,9 +375,9 @@ function FeedPostCard({
       {/* Description */}
       <p style={{
         margin: '0 0 14px 0',
-        fontSize: '16px',
+        fontSize: '13px',
         color: '#8E8E96',
-        lineHeight: '1.5',
+        lineHeight: '1.45',
       }}>
         {post.description}
       </p>
@@ -419,18 +423,16 @@ function FeedPostCard({
             gap: '7px',
             backgroundColor: '#F1F1F3',
             border: 'none',
-            borderRadius: '14px',
-            padding: '8px 14px',
+            borderRadius: '12px',
+            padding: '7px 12px',
             cursor: 'pointer',
-            color: '#4B4B57',
-            fontSize: '15px',
+            color: '#6E6E76',
+            fontSize: '14px',
             fontWeight: 500,
             fontFamily: 'inherit',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B4B57" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-          </svg>
+          <img src={commentIcon} alt="" width={16} height={16} style={{ display: 'block' }} />
           {post.commentCount}
         </button>
       </div>
