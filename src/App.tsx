@@ -819,6 +819,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setMainSearchQuery={setMainSearchQuery}
           handleMainSearchSubmit={handleMainSearchSubmit}
           currentUser={currentUser}
+          onDeleteReport={(id) => setReports(prev => prev.filter(r => r.id !== id))}
         />
       )}
 

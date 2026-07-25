@@ -2,6 +2,8 @@ import { useState } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import type { FloodReport } from '../type';
 import PostDetailScreen from './PostDetailScreen';
+import DeletePostMenu from './DeletePostMenu';
+import DeleteReportConfirmModal from './DeleteReportConfirmModal';
 
 export interface FeedPost {
   id: number;
@@ -13,6 +15,7 @@ export interface FeedPost {
   description: string;
   images: string[];
   commentCount: number;
+  reportedBy?: string;
 }
 
 interface FeedScreenProps {
@@ -21,6 +24,7 @@ interface FeedScreenProps {
   setMainSearchQuery: (q: string) => void;
   handleMainSearchSubmit: (e: React.FormEvent) => void;
   currentUser: string;
+  onDeleteReport: (id: number) => void;
 }
 
 function timeAgo(createdAt: number): string {
@@ -62,6 +66,7 @@ function toFeedPosts(reports: FloodReport[]): FeedPost[] {
     description: "Recovery days hit different when the setup is this clean 🌿☀️",
     images: r.images || (r.imageUrl ? [r.imageUrl] : []),
     commentCount: (r.id % 9) + 1,
+    reportedBy: r.reportedBy,
   }));
 }
 
@@ -126,8 +131,11 @@ export default function FeedScreen({
   setMainSearchQuery,
   handleMainSearchSubmit,
   currentUser,
+  onDeleteReport,
 }: FeedScreenProps) {
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
+  const [menuPostId, setMenuPostId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   // Merge real reports with sample posts (real posts first, most recently reported first)
   const realPosts = toFeedPosts([...reports].sort((a, b) => b.createdAt - a.createdAt));
@@ -208,7 +216,13 @@ export default function FeedScreen({
         {/* Feed Posts */}
         <div style={{ flex: 1, padding: '6px 14px 140px 14px' }}>
           {allPosts.map((post) => (
-            <FeedPostCard key={post.id} post={post} onSelect={() => setSelectedPost(post)} />
+            <FeedPostCard
+              key={post.id}
+              post={post}
+              onSelect={() => setSelectedPost(post)}
+              isOwnPost={!!post.reportedBy && post.reportedBy === currentUser}
+              onOpenMenu={() => setMenuPostId(post.id)}
+            />
           ))}
         </div>
       </div>
@@ -221,11 +235,44 @@ export default function FeedScreen({
           onBack={() => setSelectedPost(null)}
         />
       )}
+
+      {/* Delete Post action sheet */}
+      {menuPostId !== null && (
+        <DeletePostMenu
+          onClose={() => setMenuPostId(null)}
+          onDeletePost={() => {
+            setConfirmDeleteId(menuPostId);
+            setMenuPostId(null);
+          }}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDeleteId !== null && (
+        <DeleteReportConfirmModal
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={() => {
+            onDeleteReport(confirmDeleteId);
+            if (selectedPost?.id === confirmDeleteId) setSelectedPost(null);
+            setConfirmDeleteId(null);
+          }}
+        />
+      )}
     </>
   );
 }
 
-function FeedPostCard({ post, onSelect }: { post: FeedPost; onSelect: () => void }) {
+function FeedPostCard({
+  post,
+  onSelect,
+  isOwnPost,
+  onOpenMenu,
+}: {
+  post: FeedPost;
+  onSelect: () => void;
+  isOwnPost: boolean;
+  onOpenMenu: () => void;
+}) {
   const sevColors = severityColors(post.severity);
 
   return (
@@ -241,10 +288,38 @@ function FeedPostCard({ post, onSelect }: { post: FeedPost; onSelect: () => void
       }}
     >
       {/* Username row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '15px', fontWeight: 600, color: '#6E6E76' }}>@{post.username}</span>
-        <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
-        <span style={{ fontSize: '15px', color: '#9CA0A8' }}>{post.timeAgo}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: '#6E6E76' }}>@{post.username}</span>
+          <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
+          <span style={{ fontSize: '15px', color: '#9CA0A8' }}>{post.timeAgo}</span>
+        </div>
+
+        {isOwnPost && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '30px',
+              height: '30px',
+              flexShrink: 0,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#9CA0A8',
+              padding: 0,
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="12" cy="19" r="2" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Divider */}
