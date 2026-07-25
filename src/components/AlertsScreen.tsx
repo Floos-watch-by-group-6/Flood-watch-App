@@ -134,7 +134,8 @@ function AlertRow({ item, onRead, onOpenReport }: { item: AlertItemData; onRead:
         alignItems: 'center',
         gap: '8px',
         backgroundColor: item.unread ? '#E7F0FA' : '#FFFFFF',
-        boxShadow: item.unread ? 'none' : '0px 1px 3px rgba(16, 24, 40, 0.04)',
+        border: '1px solid #EFEFEF',
+        boxShadow: 'none',
         borderRadius: '20px',
         padding: '14px',
         marginBottom: '14px',
@@ -216,7 +217,7 @@ export default function AlertsScreen({ reports, onOpenReport }: AlertsScreenProp
       <div style={{
         position: 'sticky',
         top: 0,
-        backgroundColor: '#F6F7F8',
+        backgroundColor: '#FFFFFF',
         zIndex: 10,
         padding: '52px 16px 20px 16px',
         display: 'flex',
