@@ -97,7 +97,7 @@ export default function BottomNav({
           background: '#FD5F53',
           border: 'none',
           cursor: 'pointer',
-          borderRadius: '18px',
+          borderRadius: '22.5px',
           padding: '9px 20px',
           display: 'flex',
           flexDirection: 'column',
