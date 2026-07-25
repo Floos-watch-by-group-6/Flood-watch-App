@@ -348,12 +348,12 @@ function FeedPostCard({
       </div>
 
       {/* Severity + Status badges */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '1px', marginBottom: '12px', flexWrap: 'wrap' }}>
         <span style={{
           fontSize: '12px',
           fontWeight: 600,
           padding: '4px 11px',
-          borderRadius: '8px',
+          borderRadius: '12px 8px 8px 12px',
           backgroundColor: sevColors.bg,
           color: sevColors.text,
         }}>
@@ -364,7 +364,7 @@ function FeedPostCard({
           fontSize: '12px',
           fontWeight: 600,
           padding: '4px 11px',
-          borderRadius: '8px',
+          borderRadius: '8px 12px 12px 8px',
           backgroundColor: post.status === 'Verified' ? 'rgba(31, 157, 87, 0.12)' : 'rgba(110, 110, 122, 0.18)',
           color: post.status === 'Verified' ? '#1F9D57' : '#6E6E7A',
         }}>
