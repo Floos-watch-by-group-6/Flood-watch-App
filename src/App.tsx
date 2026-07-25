@@ -68,7 +68,7 @@ const INITIAL_FLOOD_REPORTS: FloodReport[] = [
     images: ["https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=400"],
     waterLevel: "Medium",
     status: "Unverified",
-    confirmations: 2,
+    confirmations: 0,
     photosCount: 1,
     timeActive: "1hr 20m",
     createdAt: Date.now() - 80 * 60 * 1000
@@ -87,8 +87,8 @@ const INITIAL_FLOOD_REPORTS: FloodReport[] = [
       "https://images.unsplash.com/photo-1504751823-c0dfea8c2c1e?q=80&w=600",
     ],
     waterLevel: "Medium",
-    status: "Verified",
-    confirmations: 4,
+    status: "Unverified",
+    confirmations: 0,
     photosCount: 4,
     timeActive: "22 min",
     createdAt: Date.now() - 22 * 60 * 1000
@@ -646,7 +646,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
     setReports(prevReports =>
       prevReports.map(rep => {
         if (rep.id === reportId) {
-          const updatedConfirmations = userVotes[reportId] === 'yes' ? rep.confirmations : rep.confirmations + 1;
+          // Never count past the verification threshold — once 3 people have
+          // confirmed, no other user's vote can push the count higher.
+          const alreadyCounted = userVotes[reportId] === 'yes' || rep.confirmations >= VERIFICATION_THRESHOLD;
+          const updatedConfirmations = alreadyCounted ? rep.confirmations : rep.confirmations + 1;
           const isNowVerified = updatedConfirmations >= VERIFICATION_THRESHOLD;
           const updatedPhotos = newPhotoUrl ? [...(rep.images || [rep.imageUrl]), newPhotoUrl] : (rep.images || [rep.imageUrl]);
 
@@ -708,6 +711,40 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
   const handleDeclineReport = (reportId: number) => {
     setUserVotes(prev => ({ ...prev, [reportId]: 'no' }));
+  };
+
+  // Whether the currently-open report can take a first-time vote right now —
+  // once 3 people have confirmed it, nobody new can add a 4th.
+  const canVoteOnReport = (report: FloodReport) => {
+    if (userVotes[report.id]) return true;
+    return report.confirmations < VERIFICATION_THRESHOLD;
+  };
+
+  const lockedVoteReason = (report: FloodReport): string | null => {
+    if (canVoteOnReport(report)) return null;
+    return 'This report has already been confirmed by the community.';
+  };
+
+  // Same flow whether opened from the map or an Alert. Once a user has
+  // confirmed a report, further taps on either button are just an
+  // acknowledgement — no re-voting, no re-counting confirmations.
+  const handleConfirmTap = (report: FloodReport) => {
+    if (userVotes[report.id] === 'yes') {
+      showToast('Thanks!');
+      setSelectedReport(null);
+      setConfirmStep('initial');
+      return;
+    }
+    handleInitiateConfirm();
+  };
+
+  const handleDeclineTap = (report: FloodReport) => {
+    if (userVotes[report.id] !== 'yes') {
+      handleDeclineReport(report.id);
+    }
+    showToast('Thanks!');
+    setSelectedReport(null);
+    setConfirmStep('initial');
   };
 
   const handleEditOwnReport = () => {
@@ -1400,9 +1437,59 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                         Is this still accurate?
                       </p>
 
+                      {canVoteOnReport(selectedReport) ? (
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => handleDeclineTap(selectedReport)}
+                            style={{
+                              flex: 1,
+                              padding: '14px',
+                              borderRadius: '50px',
+                              backgroundColor: userVotes[selectedReport.id] === 'no' ? '#E5E7EB' : '#F3F4F6',
+                              border: 'none',
+                              color: '#111827',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            No, it's cleared
+                          </button>
+
+                          <button
+                            onClick={() => handleConfirmTap(selectedReport)}
+                            style={{
+                              flex: 1,
+                              padding: '14px',
+                              borderRadius: '50px',
+                              backgroundColor: '#003366',
+                              border: 'none',
+                              color: '#FFFFFF',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Yes, still flooded
+                          </button>
+                        </div>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '13px', color: '#9CA3AF', backgroundColor: '#F3F4F6', borderRadius: '14px', padding: '14px' }}>
+                          {lockedVoteReason(selectedReport)}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                      Can you confirm this?
+                    </p>
+
+                    {canVoteOnReport(selectedReport) ? (
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <button
-                          onClick={() => handleDeclineReport(selectedReport.id)}
+                          onClick={() => handleDeclineTap(selectedReport)}
                           style={{
                             flex: 1,
                             padding: '14px',
@@ -1415,71 +1502,31 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                             cursor: 'pointer'
                           }}
                         >
-                          No, it's cleared
+                          No, looks clear
                         </button>
 
                         <button
-                          onClick={handleInitiateConfirm}
-                          disabled={userVotes[selectedReport.id] === 'yes'}
+                          onClick={() => handleConfirmTap(selectedReport)}
                           style={{
                             flex: 1,
                             padding: '14px',
                             borderRadius: '50px',
-                            backgroundColor: userVotes[selectedReport.id] === 'yes' ? '#10B981' : '#003366',
+                            backgroundColor: '#003366',
                             border: 'none',
                             color: '#FFFFFF',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: userVotes[selectedReport.id] === 'yes' ? 'default' : 'pointer'
+                            cursor: 'pointer'
                           }}
                         >
-                          {userVotes[selectedReport.id] === 'yes' ? 'Confirmed ✓' : 'Yes, still flooded'}
+                          Yes, I see it too
                         </button>
                       </div>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
-                      Can you confirm this?
-                    </p>
-
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => handleDeclineReport(selectedReport.id)}
-                        style={{
-                          flex: 1,
-                          padding: '14px',
-                          borderRadius: '50px',
-                          backgroundColor: userVotes[selectedReport.id] === 'no' ? '#E5E7EB' : '#F3F4F6',
-                          border: 'none',
-                          color: '#111827',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        No, looks clear
-                      </button>
-
-                      <button
-                        onClick={handleInitiateConfirm}
-                        disabled={userVotes[selectedReport.id] === 'yes'}
-                        style={{
-                          flex: 1,
-                          padding: '14px',
-                          borderRadius: '50px',
-                          backgroundColor: userVotes[selectedReport.id] === 'yes' ? '#10B981' : '#003366',
-                          border: 'none',
-                          color: '#FFFFFF',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: userVotes[selectedReport.id] === 'yes' ? 'default' : 'pointer'
-                        }}
-                      >
-                        {userVotes[selectedReport.id] === 'yes' ? 'Confirmed ✓' : 'Yes, I see it too'}
-                      </button>
-                    </div>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: '13px', color: '#9CA3AF', backgroundColor: '#F3F4F6', borderRadius: '14px', padding: '14px' }}>
+                        {lockedVoteReason(selectedReport)}
+                      </p>
+                    )}
                   </div>
                 )
               )}
