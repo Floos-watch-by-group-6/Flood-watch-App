@@ -1176,6 +1176,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       {currentTab === 'alerts' && !isReporting && (
         <AlertsScreen
           reports={reports}
+          currentUser={currentUser}
           onOpenReport={(report) => {
             setCurrentTab('maps');
             setSelectedReport(report);

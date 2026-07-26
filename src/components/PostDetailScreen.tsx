@@ -32,26 +32,11 @@ function severityLabel(level: 'Low' | 'Medium' | 'High'): string {
   }
 }
 
-const INITIAL_COMMENTS: Comment[] = [
-  {
-    id: 1,
-    username: 'KBSHOGI',
-    timeAgo: '22 min ago',
-    text: 'I feel you skiii. same thing over here',
-  },
-  {
-    id: 2,
-    username: 'LekiWatcher',
-    timeAgo: '18 min ago',
-    text: 'The water level is still rising on Admiralty Way, be careful!',
-  },
-];
-
 const CARD_OUTLINE = '1px solid #EFEFEF';
 const DIVIDER = '#EDEEF0';
 
 export default function PostDetailScreen({ post, currentUser, onBack }: PostDetailScreenProps) {
-  const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [replyText, setReplyText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -267,7 +252,7 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
 
         {/* ── COMMENTS ── */}
         <div ref={commentsRef}>
-          {comments.map((comment, idx) => (
+          {comments.map((comment) => (
             <div
               key={comment.id}
               style={{
@@ -276,7 +261,7 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
                 padding: '16px 20px',
                 marginBottom: '12px',
                 border: CARD_OUTLINE,
-                animation: idx >= INITIAL_COMMENTS.length ? 'fadeSlideUp 0.25s ease both' : 'none',
+                animation: 'fadeSlideUp 0.25s ease both',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
