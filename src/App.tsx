@@ -54,6 +54,9 @@ interface BackendReport {
   description?: string;
   photoUrl?: string;
   status?: string;
+  // The creating user's backend id — the API doesn't return a display name,
+  // so this only lets us recognize reports made by the signed-in user.
+  creator?: string;
   createdAt: string;
 }
 
@@ -219,6 +222,7 @@ export default function App() {
       });
     }
 
+    const myUserId = localStorage.getItem('userId');
     const toAdd = backendReports.filter(b => !knownByBackendId.has(b._id));
     const added = await Promise.all(
       toAdd.map(async (b): Promise<FloodReport> => {
@@ -230,6 +234,9 @@ export default function App() {
           backendId: b._id,
           locationName,
           description: b.description,
+          // The backend only returns a creator id, not a name — but if it's
+          // our own id, we already know our real username.
+          reportedBy: b.creator && b.creator === myUserId ? currentUser : undefined,
           coordinates: [lng, lat],
           imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
           images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
@@ -374,6 +381,7 @@ export default function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     localStorage.removeItem('accountEmail');
+    localStorage.removeItem('userId');
     setIsAuthenticated(false);
     setCurrentUser('');
     setCurrentTab('maps');

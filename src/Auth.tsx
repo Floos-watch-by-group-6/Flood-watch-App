@@ -134,6 +134,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
         return;
       }
       if (data.token) localStorage.setItem('token', data.token);
+      // Remember our own backend user id so reports we've made (fetched back
+      // via the shared reports API, which only returns a creator id) can be
+      // attributed to us by name instead of a placeholder.
+      if (data._id) localStorage.setItem('userId', data._id);
       // Prefer the username remembered from this device's signup — the
       // backend's login response doesn't reliably include the real one.
       const rememberedName = localStorage.getItem(`floodwatch_username_${email.trim().toLowerCase()}`);
@@ -222,6 +226,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
         return;
       }
       if (data.token) localStorage.setItem('token', data.token);
+      if (data._id) localStorage.setItem('userId', data._id);
       // The username the user actually typed is the source of truth — the
       // backend's response isn't reliably the same value. Remember it so
       // future logins (which only send email+password) show it too.
