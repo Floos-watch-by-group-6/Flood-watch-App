@@ -197,6 +197,69 @@ export default function App() {
     if (currentTab !== 'profile') setProfileSubPage('main');
   }, [currentTab]);
 
+  // Merge a batch of backend reports into local state: refresh confirmation
+  // counts on ones we already know, reverse-geocode and add the new ones.
+  // Shared by the periodic global poll and by location-scoped searches.
+  const mergeBackendReports = async (backendReports: BackendReport[]) => {
+    const knownByBackendId = new Map(
+      reportsRef.current.filter(r => r.backendId).map(r => [r.backendId as string, r])
+    );
+
+    const updates = new Map<string, FloodReport>();
+    for (const b of backendReports) {
+      const existing = knownByBackendId.get(b._id);
+      if (!existing) continue;
+      updates.set(b._id, {
+        ...existing,
+        confirmations: b.confirmations.yes,
+        status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+      });
+    }
+
+    const toAdd = backendReports.filter(b => !knownByBackendId.has(b._id));
+    const added = await Promise.all(
+      toAdd.map(async (b): Promise<FloodReport> => {
+        const [lng, lat] = b.location.coordinates;
+        const locationName = await fetchLocationName(lng, lat);
+        const createdAtMs = Date.parse(b.createdAt) || Date.now();
+        return {
+          id: hashIdToNumber(b._id),
+          backendId: b._id,
+          locationName,
+          description: b.description,
+          coordinates: [lng, lat],
+          imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
+          images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
+          waterLevel: b.severity,
+          status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+          confirmations: b.confirmations.yes,
+          photosCount: b.photoUrl ? 1 : 0,
+          timeActive: timeActiveFrom(createdAtMs),
+          createdAt: createdAtMs,
+        };
+      })
+    );
+
+    if (updates.size === 0 && added.length === 0) return;
+    setReports(prev => {
+      const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
+      return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
+    });
+  };
+
+  // Fetch reports near a specific place the user picked (search result),
+  // rather than their live GPS position.
+  const fetchReportsNearLocation = async (lng: number, lat: number) => {
+    try {
+      const res = await fetch(`${REPORTS_API_URL}/search?longitude=${lng}&latitude=${lat}`);
+      if (!res.ok) return;
+      const backendReports: BackendReport[] = await res.json();
+      await mergeBackendReports(backendReports);
+    } catch (error) {
+      console.error('Failed to fetch reports near searched location:', error);
+    }
+  };
+
   // Pull in flood reports other users have made on the shared backend, so
   // they show up on the map, in search, and in the Feed alongside local
   // ones — including ones created by someone else while this session is
@@ -210,55 +273,8 @@ export default function App() {
         const res = await fetch(REPORTS_API_URL);
         if (!res.ok || cancelled) return;
         const backendReports: BackendReport[] = await res.json();
-
-        const knownByBackendId = new Map(
-          reportsRef.current.filter(r => r.backendId).map(r => [r.backendId as string, r])
-        );
-
-        // Reports we already know about: just refresh their confirmation
-        // count/status from this same response — no extra geocoding needed.
-        const updates = new Map<string, FloodReport>();
-        for (const b of backendReports) {
-          const existing = knownByBackendId.get(b._id);
-          if (!existing) continue;
-          updates.set(b._id, {
-            ...existing,
-            confirmations: b.confirmations.yes,
-            status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
-          });
-        }
-
-        // Brand-new reports (e.g. from another city) need reverse geocoding
-        // for a location name.
-        const toAdd = backendReports.filter(b => !knownByBackendId.has(b._id));
-        const added = await Promise.all(
-          toAdd.map(async (b): Promise<FloodReport> => {
-            const [lng, lat] = b.location.coordinates;
-            const locationName = await fetchLocationName(lng, lat);
-            const createdAtMs = Date.parse(b.createdAt) || Date.now();
-            return {
-              id: hashIdToNumber(b._id),
-              backendId: b._id,
-              locationName,
-              description: b.description,
-              coordinates: [lng, lat],
-              imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
-              images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
-              waterLevel: b.severity,
-              status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
-              confirmations: b.confirmations.yes,
-              photosCount: b.photoUrl ? 1 : 0,
-              timeActive: timeActiveFrom(createdAtMs),
-              createdAt: createdAtMs,
-            };
-          })
-        );
-
-        if (cancelled || (updates.size === 0 && added.length === 0)) return;
-        setReports(prev => {
-          const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
-          return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
-        });
+        if (cancelled) return;
+        await mergeBackendReports(backendReports);
       } catch (error) {
         console.error('Failed to fetch community reports:', error);
       }
@@ -696,6 +712,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setCurrentCoords(feature.center);
           mapRef.current?.flyTo({ center: feature.center, zoom: 14 });
           setMainSearchQuery('');
+          // Pull in reports near the place the user just searched for,
+          // rather than relying only on their live GPS position.
+          fetchReportsNearLocation(feature.center[0], feature.center[1]);
         }
       }
     } catch (err) { console.error(err); }
