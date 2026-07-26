@@ -826,8 +826,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
-        location: { type: 'Point', coordinates: targetCoordinates },
-        severity: newWaterLevel,
+        longitude: targetCoordinates[0],
+        latitude: targetCoordinates[1],
+        waterLevel: newWaterLevel,
         description: description || undefined,
         photoUrl: imageList[0]?.startsWith('http') ? imageList[0] : '',
       }),
