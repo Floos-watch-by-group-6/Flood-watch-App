@@ -79,6 +79,28 @@ function timeActiveFrom(createdAtMs: number): string {
   return `${Math.floor(hrs / 24)}d`;
 }
 
+// A captured photo is a blob: URL that only exists in this browser's memory,
+// so it has to be re-read as real file bytes before it can be uploaded.
+// Downscale it first so a full-resolution phone photo doesn't take forever
+// to upload. The backend expects an actual multipart file (field "photo"),
+// which it uploads to Cloudinary itself and returns a real photoUrl for.
+async function compressImageToBlob(objectUrl: string, maxDim = 1280, quality = 0.8): Promise<Blob> {
+  const sourceBlob = await (await fetch(objectUrl)).blob();
+  const bitmap = await createImageBitmap(sourceBlob);
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context unavailable');
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob failed'))), 'image/jpeg', quality);
+  });
+}
+
 // 1. Extend your MapTilerFeature interface to include place_type
 interface MapTilerFeature {
   text?: string;
@@ -828,22 +850,32 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
     setTimeout(() => setShowReportPostedToast(false), 4000);
 
     // Sync to the shared backend in the background so other users can see
-    // this report too. Local UX above is unaffected either way.
+    // this report too. Local UX above is unaffected either way. The backend
+    // takes the photo as an actual multipart file upload (field "photo") and
+    // hosts it on Cloudinary itself — it does not accept a photoUrl string.
     const token = localStorage.getItem('token');
-    fetch(REPORTS_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        longitude: targetCoordinates[0],
-        latitude: targetCoordinates[1],
-        waterLevel: newWaterLevel,
-        description: description || undefined,
-        photoUrl: imageList[0]?.startsWith('http') ? imageList[0] : '',
-      }),
-    })
+    (async () => {
+      const formData = new FormData();
+      formData.append('longitude', String(targetCoordinates[0]));
+      formData.append('latitude', String(targetCoordinates[1]));
+      formData.append('waterLevel', newWaterLevel);
+      if (description) formData.append('description', description);
+      if (imageList[0]?.startsWith('blob:')) {
+        try {
+          const photoBlob = await compressImageToBlob(imageList[0]);
+          formData.append('photo', photoBlob, 'report.jpg');
+        } catch (error) {
+          console.error('Failed to prepare photo for upload:', error);
+        }
+      }
+      return fetch(REPORTS_API_URL, {
+        method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+    })()
       .then(async (res) => {
         if (!res.ok) {
           const errorBody = await res.json().catch(() => null);
