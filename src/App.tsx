@@ -36,6 +36,9 @@ const MAPTILER_KEY = 'kaeXCvS4tEksnniL7N1x';
 const VERIFICATION_THRESHOLD = 3;
 const REPORTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/reports';
 const FALLBACK_REPORT_IMAGE = 'https://images.unsplash.com/photo-1547683905-f686c993aae5?q=80&w=400';
+// If the app is backgrounded (tab hidden / browser minimized) longer than
+// this, require signing in again instead of silently resuming the session.
+const BACKGROUND_LOGOUT_MS = 5 * 60 * 1000;
 
 // On Android, skip the app's custom iOS-styled permission sheets and trigger
 // the real browser APIs instead, so the OS's own system permission dialog
@@ -420,6 +423,38 @@ export default function App() {
     setCurrentTab('maps');
     setIsReporting(false);
   };
+
+  // If the app sits backgrounded (tab hidden, browser minimized) for more
+  // than BACKGROUND_LOGOUT_MS, require signing in again on return instead of
+  // silently resuming — covers both switching away and coming back, and
+  // reopening the app later after it was fully closed while backgrounded.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const backgroundedAt = localStorage.getItem('backgroundedAt');
+    if (backgroundedAt && Date.now() - Number(backgroundedAt) > BACKGROUND_LOGOUT_MS) {
+      localStorage.removeItem('backgroundedAt');
+      handleLogout();
+      return;
+    }
+    localStorage.removeItem('backgroundedAt');
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        localStorage.setItem('backgroundedAt', String(Date.now()));
+        return;
+      }
+      const hiddenSince = localStorage.getItem('backgroundedAt');
+      localStorage.removeItem('backgroundedAt');
+      if (hiddenSince && Date.now() - Number(hiddenSince) > BACKGROUND_LOGOUT_MS) {
+        handleLogout();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // Open the weather modal and fetch live weather for the currently-viewed map area.
   const handleOpenWeather = async () => {
