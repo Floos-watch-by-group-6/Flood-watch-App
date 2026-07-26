@@ -57,12 +57,18 @@ function severityColors(level: 'Low' | 'Medium' | 'High'): { bg: string; text: s
   }
 }
 
+// Reports with no known reporter (e.g. legacy backend records with no
+// creator) get a stable handle derived from the report's own id, instead of
+// a random rotating name that could even change between renders.
+function fallbackReporterHandle(reportId: number): string {
+  return `Reporter-${Math.abs(reportId).toString(36).toUpperCase().padStart(4, '0').slice(-4)}`;
+}
+
 // Convert FloodReports to FeedPosts
 function toFeedPosts(reports: FloodReport[]): FeedPost[] {
-  const SAMPLE_USERNAMES = ['KBSHOGI', 'LekiWatcher', 'FloodAlert', 'AjahReporter', 'VIWatcher'];
-  return reports.map((r, i) => ({
+  return reports.map((r) => ({
     id: r.id,
-    username: r.reportedBy || SAMPLE_USERNAMES[i % SAMPLE_USERNAMES.length],
+    username: r.reportedBy || fallbackReporterHandle(r.id),
     timeAgo: timeAgo(r.createdAt),
     locationName: r.locationName,
     severity: r.waterLevel,

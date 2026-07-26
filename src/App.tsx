@@ -70,6 +70,14 @@ function hashIdToNumber(id: string): number {
   return Math.abs(hash);
 }
 
+// The backend has no way to resolve another user's chosen username from
+// their id, so derive a short, stable, honestly-generic handle from it —
+// the same reporter always shows the same handle, instead of a random
+// rotating placeholder name that looks like it belongs to a specific person.
+function reporterHandleFromCreatorId(creatorId: string): string {
+  return `Reporter-${creatorId.slice(-4).toUpperCase()}`;
+}
+
 function timeActiveFrom(createdAtMs: number): string {
   const diffMins = Math.max(0, Math.floor((Date.now() - createdAtMs) / 60000));
   if (diffMins < 1) return 'Just now';
@@ -256,9 +264,12 @@ export default function App() {
           backendId: b._id,
           locationName,
           description: b.description,
-          // The backend only returns a creator id, not a name — but if it's
-          // our own id, we already know our real username.
-          reportedBy: b.creator && b.creator === myUserId ? currentUser : undefined,
+          // The backend only returns a creator id, not a name. If it's our
+          // own id we already know our real username; otherwise fall back to
+          // a stable per-reporter handle rather than a random fake name.
+          reportedBy: b.creator
+            ? (b.creator === myUserId ? currentUser : reporterHandleFromCreatorId(b.creator))
+            : undefined,
           coordinates: [lng, lat],
           imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
           images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
