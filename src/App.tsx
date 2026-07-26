@@ -47,7 +47,10 @@ interface BackendReport {
   _id: string;
   location: { type: string; coordinates: [number, number] };
   confirmations: { yes: number; no: number; notSure: number };
-  severity: 'Low' | 'Medium' | 'High';
+  // New reports come back as "waterLevel"; some older documents on the
+  // backend still use the legacy field name "severity".
+  waterLevel?: 'Low' | 'Medium' | 'High';
+  severity?: 'Low' | 'Medium' | 'High';
   description?: string;
   photoUrl?: string;
   status?: string;
@@ -230,7 +233,7 @@ export default function App() {
           coordinates: [lng, lat],
           imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
           images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
-          waterLevel: b.severity,
+          waterLevel: b.waterLevel || b.severity || 'Medium',
           status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
           confirmations: b.confirmations.yes,
           photosCount: b.photoUrl ? 1 : 0,

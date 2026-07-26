@@ -53,6 +53,7 @@ function severityColors(level: 'Low' | 'Medium' | 'High'): { bg: string; text: s
     case 'High': return { bg: 'rgba(248, 17, 0, 0.08)', text: '#F81100' };
     case 'Medium': return { bg: 'rgba(232, 115, 14, 0.10)', text: '#E8730E' };
     case 'Low': return { bg: 'rgba(31, 157, 87, 0.10)', text: '#1F9D57' };
+    default: return { bg: 'rgba(110, 110, 122, 0.10)', text: '#6E6E7A' };
   }
 }
 
