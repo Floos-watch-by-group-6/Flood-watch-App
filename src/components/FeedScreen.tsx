@@ -8,6 +8,7 @@ import DeleteReportConfirmModal from './DeleteReportConfirmModal';
 
 export interface FeedPost {
   id: number;
+  backendId?: string;
   username: string;
   timeAgo: string;
   locationName: string;
@@ -68,6 +69,7 @@ function fallbackReporterHandle(reportId: number): string {
 function toFeedPosts(reports: FloodReport[]): FeedPost[] {
   return reports.map((r) => ({
     id: r.id,
+    backendId: r.backendId,
     username: r.reportedBy || fallbackReporterHandle(r.id),
     timeAgo: timeAgo(r.createdAt),
     locationName: r.locationName,

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import type { FeedPost } from './FeedScreen';
 
+const COMMENTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/comments';
+
 interface Comment {
   id: number;
   username: string;
@@ -9,10 +11,34 @@ interface Comment {
   text: string;
 }
 
+interface BackendComment {
+  _id: string;
+  text: string;
+  creator?: string | { _id: string; name?: string };
+  createdAt: string;
+}
+
 interface PostDetailScreenProps {
   post: FeedPost;
   currentUser: string;
   onBack: () => void;
+}
+
+function hashCommentId(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function timeAgoFrom(createdAt: string): string {
+  const diffMins = Math.floor((Date.now() - Date.parse(createdAt)) / 60000);
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const hrs = Math.floor(diffMins / 60);
+  if (hrs < 24) return `${hrs}hr ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 // Pill palette matches the pillu.svg asset (same as the Feed).
@@ -38,12 +64,35 @@ const DIVIDER = '#EDEEF0';
 export default function PostDetailScreen({ post, currentUser, onBack }: PostDetailScreenProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyText, setReplyText] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const commentsRef = useRef<HTMLDivElement>(null);
   const sevColors = severityColors(post.severity);
 
   const watcherCount = comments.filter((c) => c.username !== currentUser).length;
+
+  // Load persisted comments from backend when the post detail opens.
+  useEffect(() => {
+    if (!post.backendId) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    setLoadingComments(true);
+    fetch(`${COMMENTS_API_URL}/${post.backendId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.ok ? res.json() : [])
+      .then((data: BackendComment[]) => {
+        setComments(data.map(c => {
+          const name = typeof c.creator === 'object'
+            ? c.creator?.name || 'Unknown'
+            : c.creator || 'Unknown';
+          return { id: hashCommentId(c._id), username: name, timeAgo: timeAgoFrom(c.createdAt), text: c.text };
+        }));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingComments(false));
+  }, [post.backendId]);
 
   const handleSend = () => {
     const text = replyText.trim();
@@ -59,6 +108,19 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
     setTimeout(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, 50);
+
+    // Persist to backend so other users see this comment.
+    if (post.backendId) {
+      const token = localStorage.getItem('token');
+      fetch(`${COMMENTS_API_URL}/${post.backendId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ text }),
+      }).catch(() => {});
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -252,6 +314,11 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
 
         {/* ── COMMENTS ── */}
         <div ref={commentsRef}>
+          {loadingComments && (
+            <p style={{ textAlign: 'center', fontSize: '13px', color: '#B0B0B8', margin: '8px 0 16px' }}>
+              Loading comments…
+            </p>
+          )}
           {comments.map((comment) => (
             <div
               key={comment.id}
