@@ -349,7 +349,7 @@ export default function App() {
     };
 
     syncReports();
-    const intervalId = setInterval(syncReports, 30000);
+    const intervalId = setInterval(syncReports, 5000);
 
     return () => { cancelled = true; clearInterval(intervalId); };
   }, [isAuthenticated]);
