@@ -81,9 +81,10 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
     fetch(`${COMMENTS_API_URL}/${post.backendId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.ok ? res.json() : [])
-      .then((data: BackendComment[]) => {
-        setComments(data.map(c => {
+      .then(res => res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`))
+      .then((data: unknown) => {
+        const list: BackendComment[] = Array.isArray(data) ? data : (data as { comments?: BackendComment[] }).comments ?? [];
+        setComments(list.map(c => {
           const name = typeof c.creator === 'object'
             ? c.creator?.name || 'Unknown'
             : c.creator || 'Unknown';
@@ -119,7 +120,8 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ text }),
-      }).catch(() => {});
+      })
+        .catch(() => {});
     }
   };
 
