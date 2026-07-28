@@ -909,7 +909,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       formData.append('latitude', String(targetCoordinates[1]));
       formData.append('waterLevel', newWaterLevel);
       if (description) formData.append('description', description);
-      if (imageList[0]?.startsWith('blob:')) {
+      if (imageList[0]?.startsWith('blob:') || imageList[0]?.startsWith('data:')) {
         try {
           const photoBlob = await compressImageToBlob(imageList[0]);
           formData.append('photo', photoBlob, 'report.jpg');
@@ -934,7 +934,12 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         }
         const created = await res.json().catch(() => null);
         if (created?._id) {
-          setReports(prev => prev.map(rep => rep.id === newReport.id ? { ...rep, backendId: created._id } : rep));
+          setReports(prev => prev.map(rep => rep.id === newReport.id ? {
+            ...rep,
+            backendId: created._id,
+            // Replace the local data:/blob: URL with the permanent Cloudinary URL
+            ...(created.photoUrl ? { imageUrl: created.photoUrl, images: [created.photoUrl] } : {}),
+          } : rep));
         }
       })
       .catch((error) => {
