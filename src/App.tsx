@@ -344,53 +344,16 @@ export default function App() {
     return () => { cancelled = true; clearInterval(intervalId); };
   }, [isAuthenticated]);
 
-  // Notify the current user when someone else comments on one of their reports.
-  // Baseline counts are captured on the first poll so we only fire on genuinely
-  // NEW comments that arrive while the session is open.
-  const commentNotifCountsRef = useRef<Record<string, number>>({});
-  useEffect(() => {
-    if (!isAuthenticated || !currentUser) return;
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    commentNotifCountsRef.current = {};
-    let cancelled = false;
+  const [commentNotifMessage, setCommentNotifMessage] = useState<string | null>(null);
 
-    const checkNewComments = async () => {
-      const myReports = reportsRef.current.filter(r => r.backendId && r.reportedBy === currentUser);
-      for (const report of myReports) {
-        if (cancelled) return;
-        try {
-          const res = await fetch(
-            `https://floodwatch-backend-82y3.onrender.com/api/comments/${report.backendId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (!res.ok || cancelled) continue;
-          const data = await res.json();
-          const count = Array.isArray(data) ? data.length
-            : (data as { comments?: unknown[] }).comments?.length ?? 0;
-          const prev = commentNotifCountsRef.current[report.backendId!];
-          if (prev === undefined) {
-            // First poll — establish baseline, don't notify for existing comments.
-            commentNotifCountsRef.current[report.backendId!] = count;
-          } else if (count > prev) {
-            commentNotifCountsRef.current[report.backendId!] = count;
-            const added = count - prev;
-            const body = `${added === 1 ? 'Someone' : `${added} people`} commented on your report at ${report.locationName}`;
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification('New comment on your report', { body });
-            } else {
-              setToastMessage(body);
-              setTimeout(() => setToastMessage(null), 4000);
-            }
-          }
-        } catch {}
-      }
-    };
-
-    checkNewComments();
-    const id = setInterval(checkNewComments, 10000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [isAuthenticated, currentUser]);
+  const handleNewCommentOnMyReport = (locationName: string) => {
+    const body = `Someone commented on your report at ${locationName}`;
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New comment on your report', { body });
+    }
+    setCommentNotifMessage(body);
+    setTimeout(() => setCommentNotifMessage(null), 6000);
+  };
 
   const [newWaterLevel, setNewWaterLevel] = useState<'Low' | 'Medium' | 'High' | null>(null);
   const [description, setDescription] = useState('');
@@ -1280,6 +1243,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           handleMainSearchSubmit={handleMainSearchSubmit}
           currentUser={currentUser}
           onDeleteReport={(id) => setReports(prev => prev.filter(r => r.id !== id))}
+          onNewCommentOnMyReport={handleNewCommentOnMyReport}
         />
       )}
 
@@ -1452,6 +1416,51 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                 />
               </svg>
             </div>
+          </div>
+        )}
+
+        {/* Comment notification banner — appears at the top like a system notification */}
+        {commentNotifMessage && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '52px',
+              left: '12px',
+              right: '12px',
+              backgroundColor: '#1C1C1E',
+              borderRadius: '18px',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: '0px 8px 24px rgba(0,0,0,0.35)',
+              zIndex: 3000,
+              animation: 'reportToastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+            }}
+          >
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              backgroundColor: '#0F2A4A',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#FFFFFF" strokeWidth="1.8" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>New comment on your report</p>
+              <p style={{ margin: '3px 0 0 0', fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {commentNotifMessage}
+              </p>
+            </div>
+            <button
+              onClick={() => setCommentNotifMessage(null)}
+              style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', flexShrink: 0 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
           </div>
         )}
 
