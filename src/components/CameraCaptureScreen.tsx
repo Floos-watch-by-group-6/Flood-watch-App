@@ -9,7 +9,6 @@ interface CameraCaptureScreenProps {
 export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack }: CameraCaptureScreenProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const fallbackInputRef = useRef<HTMLInputElement>(null);
   const [captured, setCaptured] = useState<string[]>([]);
   const [mode, setMode] = useState<'live' | 'review'>('live');
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
@@ -66,15 +65,6 @@ export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack 
     setMode('review');
   };
 
-  const handleFallbackFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    const url = URL.createObjectURL(files[0]);
-    setCaptured((prev) => [...prev, url]);
-    setMode('review');
-    e.target.value = '';
-  };
-
   const addAnother = () => {
     if (captured.length >= maxPhotos) return;
     setMode('live');
@@ -121,21 +111,18 @@ export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack 
 
             {cameraError && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', padding: '32px', textAlign: 'center' }}>
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="7" width="18" height="13" rx="3" stroke="#FFFFFF" strokeWidth="1.6" />
                   <circle cx="12" cy="13.5" r="3.4" stroke="#FFFFFF" strokeWidth="1.6" />
                   <path d="M8.2 7l1.1-2.2h5.4L15.8 7" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 3l18 18" stroke="#FD5F53" strokeWidth="2" strokeLinecap="round" />
                 </svg>
-                <div style={{ color: '#FFFFFF', fontSize: '15px', maxWidth: '260px', lineHeight: 1.5 }}>
-                  Camera unavailable. Grant camera access, or pick a photo from your library.
+                <div style={{ color: '#FFFFFF', fontSize: '17px', fontWeight: 700, maxWidth: '260px', lineHeight: 1.4 }}>
+                  Camera access required
                 </div>
-                <button
-                  type="button"
-                  onClick={() => fallbackInputRef.current?.click()}
-                  style={{ padding: '13px 22px', borderRadius: '999px', backgroundColor: '#FD5F53', color: '#FFFFFF', border: 'none', fontSize: '15px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  Choose from library
-                </button>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', maxWidth: '260px', lineHeight: 1.6 }}>
+                  FloodWatch only accepts live photos to ensure reports are real and trustworthy. Please allow camera access in your device settings and try again.
+                </div>
               </div>
             )}
 
@@ -274,7 +261,6 @@ export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack 
         </div>
       )}
 
-      <input ref={fallbackInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFallbackFiles} />
     </div>
   );
 }
