@@ -20,6 +20,16 @@ function MapsIcon({ color }: { color: string }) {
   );
 }
 
+function MapsIconFilled() {
+  return (
+    <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7.1332 2.7832V14.7249C6.84987 14.7332 6.56654 14.7999 6.3582 14.9249L4.39987 16.0415C3.0332 16.8249 1.9082 16.1749 1.9082 14.5915V6.4832C1.9082 5.9582 2.2832 5.3082 2.74987 5.04154L6.3582 2.97487C6.56654 2.8582 6.84987 2.79154 7.1332 2.7832Z" fill="#AFC1CC"/>
+      <path d="M13.1083 5.27479V17.2165C12.8166 17.2248 12.5333 17.1748 12.3083 17.0665L7.9333 14.8748C7.7083 14.7665 7.42497 14.7165 7.1333 14.7248V2.78312C7.42497 2.77479 7.7083 2.82479 7.9333 2.93312L12.3083 5.12479C12.5333 5.23312 12.8166 5.28312 13.1083 5.27479Z" fill="#0E4567"/>
+      <path d="M18.3334 5.40855V13.5169C18.3334 14.0419 17.9584 14.6919 17.4917 14.9586L13.8834 17.0252C13.6751 17.1419 13.3917 17.2086 13.1084 17.2169V5.27522C13.3917 5.26688 13.6751 5.20022 13.8834 5.07522L15.8417 3.95855C17.2084 3.17522 18.3334 3.82522 18.3334 5.40855Z" fill="#AFC1CC"/>
+    </svg>
+  );
+}
+
 function FeedIcon({ color }: { color: string }) {
   return (
     <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
@@ -79,7 +89,7 @@ export default function BottomNav({
   return (
     <div className="navBar" style={{ pointerEvents: 'auto' }}>
       <button style={itemStyle} onClick={handleMapsTabClick}>
-        <MapsIcon color={currentTab === 'maps' ? ACTIVE : INACTIVE} />
+        {currentTab === 'maps' ? <MapsIconFilled /> : <MapsIcon color={INACTIVE} />}
         {currentTab === 'maps' ? <ActiveDot /> : <span style={{ height: '5px' }} />}
         <span style={labelStyle(currentTab === 'maps')}>Maps</span>
       </button>
