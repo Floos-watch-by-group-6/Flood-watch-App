@@ -50,10 +50,10 @@ function FeedIconFilled() {
 
 function AlertsIcon({ color }: { color: string }) {
   return (
-    <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
-      <path d="M18.5 16V10a6.5 6.5 0 10-13 0v6" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M4 16.5h16" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M13.7 19.5a2 2 0 01-3.4 0" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.0165 2.42505C7.25816 2.42505 5.0165 4.66672 5.0165 7.42505V9.83338C5.0165 10.3417 4.79983 11.1167 4.5415 11.55L3.58316 13.1417C2.9915 14.125 3.39983 15.2167 4.48316 15.5834C8.07483 16.7834 11.9498 16.7834 15.5415 15.5834C16.5498 15.25 16.9915 14.0584 16.4415 13.1417L15.4832 11.55C15.2332 11.1167 15.0165 10.3417 15.0165 9.83338V7.42505C15.0165 4.67505 12.7665 2.42505 10.0165 2.42505Z" stroke={color} strokeWidth="1.25" strokeMiterlimit="10" strokeLinecap="round"/>
+      <path d="M11.5584 2.6667C11.3001 2.5917 11.0334 2.53337 10.7584 2.50003C9.95843 2.40003 9.19176 2.45837 8.4751 2.6667C8.71676 2.05003 9.31676 1.6167 10.0168 1.6167C10.7168 1.6167 11.3168 2.05003 11.5584 2.6667Z" stroke={color} strokeWidth="1.25" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12.5166 15.8833C12.5166 17.2583 11.3916 18.3833 10.0166 18.3833C9.33327 18.3833 8.69993 18.1 8.24993 17.65C7.79993 17.2 7.5166 16.5666 7.5166 15.8833" stroke={color} strokeWidth="1.25" strokeMiterlimit="10"/>
     </svg>
   );
 }
