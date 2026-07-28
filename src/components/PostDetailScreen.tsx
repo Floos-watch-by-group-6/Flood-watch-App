@@ -14,7 +14,10 @@ interface Comment {
 interface BackendComment {
   _id: string;
   text: string;
+  // Backend may use any of these field names for the commenter
   creator?: string | { _id: string; name?: string };
+  user?:    string | { _id: string; name?: string };
+  author?:  string | { _id: string; name?: string };
   createdAt: string;
 }
 
@@ -72,27 +75,42 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
 
   const watcherCount = comments.filter((c) => c.username !== currentUser).length;
 
-  // Load persisted comments from backend when the post detail opens.
+  // Fetch comments and keep them live while the post detail is open.
   useEffect(() => {
     if (!post.backendId) return;
     const token = localStorage.getItem('token');
     if (!token) return;
-    setLoadingComments(true);
-    fetch(`${COMMENTS_API_URL}/${post.backendId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.ok ? res.json() : Promise.reject(`HTTP ${res.status}`))
-      .then((data: unknown) => {
-        const list: BackendComment[] = Array.isArray(data) ? data : (data as { comments?: BackendComment[] }).comments ?? [];
-        setComments(list.map(c => {
-          const name = typeof c.creator === 'object'
-            ? c.creator?.name || 'Unknown'
-            : c.creator || 'Unknown';
-          return { id: hashCommentId(c._id), username: name, timeAgo: timeAgoFrom(c.createdAt), text: c.text };
-        }));
-      })
-      .catch(() => {})
-      .finally(() => setLoadingComments(false));
+    let cancelled = false;
+
+    const parseComments = (data: unknown): Comment[] => {
+      const list: BackendComment[] = Array.isArray(data)
+        ? data
+        : (data as { comments?: BackendComment[] }).comments ?? [];
+      return list.map(c => {
+        const creatorField = c.creator ?? c.user ?? c.author;
+        const name = typeof creatorField === 'object'
+          ? creatorField?.name || 'Unknown'
+          : creatorField || 'Unknown';
+        return { id: hashCommentId(c._id), username: name, timeAgo: timeAgoFrom(c.createdAt), text: c.text };
+      });
+    };
+
+    const fetchComments = async (showLoading = false) => {
+      if (showLoading) setLoadingComments(true);
+      try {
+        const res = await fetch(`${COMMENTS_API_URL}/${post.backendId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (cancelled || !res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setComments(parseComments(data));
+      } catch {}
+      finally { if (showLoading) setLoadingComments(false); }
+    };
+
+    fetchComments(true);
+    const intervalId = setInterval(() => fetchComments(false), 5000);
+    return () => { cancelled = true; clearInterval(intervalId); };
   }, [post.backendId]);
 
   const handleSend = () => {
