@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 const COMMENTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/comments';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
@@ -29,7 +29,6 @@ interface FeedScreenProps {
   handleMainSearchSubmit: (e: React.FormEvent) => void;
   currentUser: string;
   onDeleteReport: (id: number) => void;
-  onNewCommentOnMyReport?: (locationName: string) => void;
 }
 
 function timeAgo(createdAt: number): string {
@@ -147,17 +146,14 @@ export default function FeedScreen({
   handleMainSearchSubmit,
   currentUser,
   onDeleteReport,
-  onNewCommentOnMyReport,
 }: FeedScreenProps) {
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [menuPostId, setMenuPostId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
-  // Track previous counts so we can detect increases for the current user's posts.
-  const prevCountsRef = useRef<Record<string, number>>({});
 
-  // Poll comment counts for all backend-synced posts so the count updates
-  // in real time as comments arrive, without requiring a page refresh.
+  // Poll comment counts for all backend-synced posts so the count updates in real time.
+  // Notification detection is handled in App.tsx so it works on any tab.
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -174,12 +170,6 @@ export default function FeedScreen({
           .then((data: unknown) => {
             if (cancelled) return;
             const count = Array.isArray(data) ? data.length : 0;
-            const prev = prevCountsRef.current[r.backendId!];
-            // If count went up on a post the current user owns, notify them.
-            if (prev !== undefined && count > prev && r.reportedBy === currentUser) {
-              onNewCommentOnMyReport?.(r.locationName);
-            }
-            prevCountsRef.current[r.backendId!] = count;
             setCommentCounts(prev => ({ ...prev, [r.backendId!]: count }));
           })
           .catch(() => {});

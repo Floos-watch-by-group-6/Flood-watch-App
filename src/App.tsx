@@ -365,6 +365,38 @@ export default function App() {
     setTimeout(() => setCommentNotifMessage(null), 6000);
   };
 
+  // Poll comment counts app-wide (not inside FeedScreen) so notifications fire
+  // even when the user is on a different tab.
+  const commentPrevCountsRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const fetchCounts = () => {
+      const myReports = reports.filter(r => r.backendId && r.reportedBy === currentUser);
+      myReports.forEach(r => {
+        fetch(`https://floodwatch-backend-82y3.onrender.com/api/comments/${r.backendId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then(res => res.ok ? res.json() : [])
+          .then((data: unknown) => {
+            const count = Array.isArray(data) ? data.length : 0;
+            const prev = commentPrevCountsRef.current[r.backendId!];
+            if (prev !== undefined && count > prev) {
+              handleNewCommentOnMyReport(r.locationName);
+            }
+            commentPrevCountsRef.current[r.backendId!] = count;
+          })
+          .catch(() => {});
+      });
+    };
+
+    fetchCounts();
+    const id = setInterval(fetchCounts, 10000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, reports, currentUser]);
+
   const [newWaterLevel, setNewWaterLevel] = useState<'Low' | 'Medium' | 'High' | null>(null);
   const [description, setDescription] = useState('');
   
