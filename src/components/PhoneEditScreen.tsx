@@ -66,21 +66,23 @@ export default function PhoneEditScreen({ currentPhone, onBack }: PhoneEditScree
           </p>
 
           <div style={{ fontSize: '15px', color: '#9CA3AF', marginBottom: '8px' }}>Phone</div>
-          <div style={{ fontSize: '28px', fontWeight: '700', color: '#1F2430', marginBottom: '20px' }}>
-            {currentPhone}
+          <div style={{ fontSize: '28px', fontWeight: '700', color: currentPhone ? '#1F2430' : '#9CA3AF', marginBottom: '20px' }}>
+            {currentPhone || 'Not added yet'}
           </div>
 
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#1F5C4E',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+          {currentPhone && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#1F5C4E',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12.5l4.5 4.5L19 7" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span style={{ fontSize: '17px', fontWeight: '700', color: '#1F5C4E' }}>Verified</span>
             </div>
-            <span style={{ fontSize: '17px', fontWeight: '700', color: '#1F5C4E' }}>Verified</span>
-          </div>
+          )}
         </div>
       </div>
     </div>

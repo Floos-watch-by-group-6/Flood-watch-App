@@ -197,7 +197,7 @@ export default function App() {
   // bounce the user back to the Auth screen.
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem('token'));
   const [currentUser, setCurrentUser] = useState<string>(() => localStorage.getItem('currentUser') || '');
-  const accountPhone = '+234 801 234 5678';
+  const [accountPhone, setAccountPhone] = useState<string>(() => localStorage.getItem('accountPhone') || '');
   const [accountEmail, setAccountEmail] = useState<string>(() => localStorage.getItem('accountEmail') || '');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
