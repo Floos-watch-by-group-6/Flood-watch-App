@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import locationPinIcon from './assets/location-06.svg';
-import checkmarkIcon from './assets/checkmark.svg';
+
+function ToastCheckmark() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: 'block' }}>
+      <path d="M9.59493 1.74423C9.85509 1.6406 10.1443 1.6406 10.4044 1.74423C11.2431 2.07822 11.4069 3.36437 12.3965 3.43597C13.0934 3.48639 13.7771 2.90548 14.4764 3.07962C14.7584 3.14986 15.002 3.32966 15.1547 3.58031C15.6223 4.34837 15.0188 5.47727 15.7816 6.11457C16.3115 6.55714 17.1872 6.49987 17.648 7.04242C17.842 7.27095 17.9373 7.56903 17.9124 7.86959C17.8387 8.76371 16.6987 9.32281 16.9493 10.2864C17.1226 10.9534 17.854 11.4223 17.9124 12.1301C17.9373 12.4307 17.842 12.7288 17.648 12.9573C17.069 13.6389 15.817 13.4144 15.456 14.3383C15.2025 14.9868 15.528 15.8063 15.1547 16.4193C15.002 16.67 14.7584 16.8498 14.4764 16.9201C13.6082 17.1362 12.7269 16.2036 11.8914 16.7297C11.2949 17.1052 11.0812 17.9861 10.4044 18.2554C10.1443 18.3591 9.85509 18.3591 9.59493 18.2554C8.91817 17.9861 8.70442 17.1052 8.10792 16.7297C7.28277 16.2101 6.37645 17.1326 5.52293 16.9201C5.2409 16.8498 4.99734 16.67 4.84472 16.4193C4.37706 15.6513 4.98054 14.5224 4.21776 13.8851C3.68786 13.4425 2.81213 13.4999 2.35138 12.9573C2.15735 12.7288 2.06204 12.4307 2.08688 12.1301C2.14538 11.4223 2.87667 10.9534 3.05009 10.2864C3.29807 9.3329 2.15971 8.75062 2.08688 7.86959C2.06204 7.56903 2.15735 7.27095 2.35138 7.04242C2.93031 6.36054 4.18217 6.58528 4.54333 5.66136C4.79685 5.01283 4.47141 4.1934 4.84472 3.58031C4.99734 3.32966 5.2409 3.14986 5.52293 3.07962C6.22222 2.90548 6.90599 3.48639 7.60283 3.43597C8.59239 3.36439 8.75627 2.07822 9.59493 1.74423Z" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M7.5 11.1112C7.5 11.1112 8.22917 11.1112 8.95833 12.5002C8.95833 12.5002 11.2745 9.02791 13.3333 8.3335" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
 
 import Auth from './Auth';
 import TopHeader from './components/TopHeader';
@@ -1400,7 +1408,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#FFFFFF', lineHeight: '1.3' }}>
               {toastMessage}
             </p>
-            <img src={checkmarkIcon} alt="" width={24} height={24} style={{ flexShrink: 0, display: 'block' }} />
+            <ToastCheckmark />
           </div>
         )}
 
@@ -1479,7 +1487,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               </p>
             </div>
             {/* Badge verified icon */}
-            <img src={checkmarkIcon} alt="" width={24} height={24} style={{ flexShrink: 0, display: 'block' }} />
+            <ToastCheckmark />
           </div>
         )}
 
@@ -1507,7 +1515,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Location updated
             </p>
-            <img src={checkmarkIcon} alt="" width={24} height={24} style={{ flexShrink: 0, display: 'block' }} />
+            <ToastCheckmark />
           </div>
         )}
 
@@ -1535,7 +1543,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Password Updated
             </p>
-            <img src={checkmarkIcon} alt="" width={24} height={24} style={{ flexShrink: 0, display: 'block' }} />
+            <ToastCheckmark />
           </div>
         )}
 
@@ -1563,7 +1571,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Default Zone Updated
             </p>
-            <img src={checkmarkIcon} alt="" width={24} height={24} style={{ flexShrink: 0, display: 'block' }} />
+            <ToastCheckmark />
           </div>
         )}
 
