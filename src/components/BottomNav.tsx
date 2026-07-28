@@ -38,6 +38,16 @@ function FeedIcon({ color }: { color: string }) {
   );
 }
 
+function FeedIconFilled() {
+  return (
+    <svg width="25" height="25" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.3335 4.1665L16.6668 4.1665" stroke="#0E4567" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3.3335 10L16.6668 10" stroke="#AFC1CC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3.3335 15.8335L11.6668 15.8335" stroke="#0E4567" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 function AlertsIcon({ color }: { color: string }) {
   return (
     <svg width="25" height="25" viewBox="0 0 24 24" fill="none">
@@ -95,7 +105,7 @@ export default function BottomNav({
       </button>
 
       <button style={itemStyle} onClick={() => setCurrentTab('feed')}>
-        <FeedIcon color={currentTab === 'feed' ? ACTIVE : INACTIVE} />
+        {currentTab === 'feed' ? <FeedIconFilled /> : <FeedIcon color={INACTIVE} />}
         {currentTab === 'feed' ? <ActiveDot /> : <span style={{ height: '5px' }} />}
         <span style={labelStyle(currentTab === 'feed')}>Feed</span>
       </button>
