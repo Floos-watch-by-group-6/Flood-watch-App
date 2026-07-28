@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const COMMENTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/comments';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import commentIcon from '../assets/comment.svg';
 import type { FloodReport } from '../type';
@@ -148,9 +150,31 @@ export default function FeedScreen({
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [menuPostId, setMenuPostId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+
+  // Fetch real comment counts for every backend-synced post.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    reports.forEach(r => {
+      if (!r.backendId) return;
+      fetch(`${COMMENTS_API_URL}/${r.backendId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.ok ? res.json() : [])
+        .then((data: unknown) => {
+          const count = Array.isArray(data) ? data.length : 0;
+          setCommentCounts(prev => ({ ...prev, [r.backendId!]: count }));
+        })
+        .catch(() => {});
+    });
+  }, [reports]);
 
   // Merge real reports with sample posts (real posts first, most recently reported first)
-  const realPosts = toFeedPosts([...reports].sort((a, b) => b.createdAt - a.createdAt));
+  const realPosts = toFeedPosts([...reports].sort((a, b) => b.createdAt - a.createdAt)).map(p => ({
+    ...p,
+    commentCount: p.backendId ? (commentCounts[p.backendId] ?? 0) : p.commentCount,
+  }));
   const allPosts: FeedPost[] = [...realPosts, ...SAMPLE_POSTS];
 
   return (
