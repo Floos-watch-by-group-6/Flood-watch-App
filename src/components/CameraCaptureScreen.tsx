@@ -121,7 +121,7 @@ export default function CameraCaptureScreen({ maxPhotos = 2, onComplete, onBack 
                   Camera access required
                 </div>
                 <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', maxWidth: '260px', lineHeight: 1.6 }}>
-                  FloodWatch only accepts live photos to ensure reports are real and trustworthy. Please allow camera access in your device settings, then refresh the app to be prompted again.
+                  FloodWatch only accepts live photos to ensure reports are real and trustworthy. Please allow camera access in your device settings or refresh the app to be prompted again.
                 </div>
               </div>
             )}
