@@ -155,7 +155,7 @@ export default function BottomNav({
       </button>
 
       <button style={itemStyle} onClick={() => setCurrentTab('alerts')}>
-        <AlertsIcon color={currentTab === 'alerts' ? ACTIVE : INACTIVE} />
+        {currentTab === 'alerts' ? <AlertsIconFilled /> : <AlertsIcon color={INACTIVE} />}
         {currentTab === 'alerts' ? <ActiveDot /> : <span style={{ height: '5px' }} />}
         <span style={labelStyle(currentTab === 'alerts')}>Alerts</span>
       </button>
