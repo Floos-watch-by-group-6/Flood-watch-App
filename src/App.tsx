@@ -94,8 +94,17 @@ function timeActiveFrom(createdAtMs: number): string {
 // Downscale it first so a full-resolution phone photo doesn't take forever
 // to upload. The backend expects an actual multipart file (field "photo"),
 // which it uploads to Cloudinary itself and returns a real photoUrl for.
+function dataURLtoBlob(dataUrl: string): Blob {
+  const [header, b64] = dataUrl.split(',');
+  const mime = header.slice(5, header.indexOf(';'));
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  return new Blob([bytes], { type: mime });
+}
+
 async function compressImageToBlob(objectUrl: string, maxDim = 1280, quality = 0.8): Promise<Blob> {
-  const sourceBlob = await (await fetch(objectUrl)).blob();
+  const sourceBlob = objectUrl.startsWith('data:')
+    ? dataURLtoBlob(objectUrl)
+    : await (await fetch(objectUrl)).blob();
   const bitmap = await createImageBitmap(sourceBlob);
   const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);
