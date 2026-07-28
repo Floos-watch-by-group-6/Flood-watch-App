@@ -57,9 +57,8 @@ interface BackendReport {
   description?: string;
   photoUrl?: string;
   status?: string;
-  // The creating user's backend id — the API doesn't return a display name,
-  // so this only lets us recognize reports made by the signed-in user.
-  creator?: string;
+  // The backend populates the creator field with the full user object.
+  creator?: string | { _id: string; name?: string };
   createdAt: string;
 }
 
@@ -262,17 +261,21 @@ export default function App() {
         const [lng, lat] = b.location.coordinates;
         const locationName = await fetchLocationName(lng, lat);
         const createdAtMs = Date.parse(b.createdAt) || Date.now();
+        // Backend populates creator as an object {_id, name}; older records
+        // may leave it as a plain id string or omit it entirely.
+        const creatorId = typeof b.creator === 'object' ? b.creator?._id : b.creator;
+        const creatorName = typeof b.creator === 'object' ? b.creator?.name : undefined;
+        const reportedBy = creatorId
+          ? (creatorId === myUserId
+            ? currentUser
+            : (creatorName || reporterHandleFromCreatorId(creatorId)))
+          : undefined;
         return {
           id: hashIdToNumber(b._id),
           backendId: b._id,
           locationName,
           description: b.description,
-          // The backend only returns a creator id, not a name. If it's our
-          // own id we already know our real username; otherwise fall back to
-          // a stable per-reporter handle rather than a random fake name.
-          reportedBy: b.creator
-            ? (b.creator === myUserId ? currentUser : reporterHandleFromCreatorId(b.creator))
-            : undefined,
+          reportedBy,
           coordinates: [lng, lat],
           imageUrl: b.photoUrl || FALLBACK_REPORT_IMAGE,
           images: [b.photoUrl || FALLBACK_REPORT_IMAGE],
