@@ -1266,9 +1266,8 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           bottom: '108px',
           zIndex: 2,
           pointerEvents: 'none',
-          fontFamily: '"Segoe Script", "Bradley Hand", "Brush Script MT", cursive',
-          fontStyle: 'italic',
-          fontWeight: 700,
+          fontFamily: '"Pacifico", cursive',
+          fontWeight: 400,
           fontSize: '20px',
           color: '#1F2430',
           textShadow: '0 0 8px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.9)',
@@ -1289,7 +1288,6 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             setShowReportDeletedToast(true);
             setTimeout(() => setShowReportDeletedToast(false), 4000);
           }}
-          onNewCommentOnMyReport={handleNewCommentOnMyReport}
         />
       )}
 
