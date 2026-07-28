@@ -344,6 +344,53 @@ export default function App() {
     return () => { cancelled = true; clearInterval(intervalId); };
   }, [isAuthenticated]);
 
+  // Notify the current user when someone else comments on one of their reports.
+  // Baseline counts are captured on the first poll so we only fire on genuinely
+  // NEW comments that arrive while the session is open.
+  const commentNotifCountsRef = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    commentNotifCountsRef.current = {};
+    let cancelled = false;
+
+    const checkNewComments = async () => {
+      const myReports = reportsRef.current.filter(r => r.backendId && r.reportedBy === currentUser);
+      for (const report of myReports) {
+        if (cancelled) return;
+        try {
+          const res = await fetch(
+            `https://floodwatch-backend-82y3.onrender.com/api/comments/${report.backendId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok || cancelled) continue;
+          const data = await res.json();
+          const count = Array.isArray(data) ? data.length
+            : (data as { comments?: unknown[] }).comments?.length ?? 0;
+          const prev = commentNotifCountsRef.current[report.backendId!];
+          if (prev === undefined) {
+            // First poll — establish baseline, don't notify for existing comments.
+            commentNotifCountsRef.current[report.backendId!] = count;
+          } else if (count > prev) {
+            commentNotifCountsRef.current[report.backendId!] = count;
+            const added = count - prev;
+            const body = `${added === 1 ? 'Someone' : `${added} people`} commented on your report at ${report.locationName}`;
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('New comment on your report', { body });
+            } else {
+              setToastMessage(body);
+              setTimeout(() => setToastMessage(null), 4000);
+            }
+          }
+        } catch {}
+      }
+    };
+
+    checkNewComments();
+    const id = setInterval(checkNewComments, 10000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isAuthenticated, currentUser]);
 
   const [newWaterLevel, setNewWaterLevel] = useState<'Low' | 'Medium' | 'High' | null>(null);
   const [description, setDescription] = useState('');
