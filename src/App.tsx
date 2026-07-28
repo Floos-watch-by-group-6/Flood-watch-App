@@ -1317,6 +1317,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           <PhoneEditScreen
             currentPhone={accountPhone}
             onBack={() => setProfileSubPage('personalInfo')}
+            onSave={(phone) => { setAccountPhone(phone); localStorage.setItem('accountPhone', phone); }}
           />
         ) : profileSubPage === 'email' ? (
           <EmailEditScreen
