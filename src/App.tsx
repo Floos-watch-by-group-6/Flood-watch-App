@@ -223,6 +223,7 @@ export default function App() {
   const [showLocationUpdatedToast, setShowLocationUpdatedToast] = useState<boolean>(false);
   const [showPasswordUpdatedToast, setShowPasswordUpdatedToast] = useState<boolean>(false);
   const [showDefaultZoneUpdatedToast, setShowDefaultZoneUpdatedToast] = useState<boolean>(false);
+  const [showReportDeletedToast, setShowReportDeletedToast] = useState<boolean>(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState<boolean>(false);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
   const [showWeatherModal, setShowWeatherModal] = useState<boolean>(false);
@@ -1251,7 +1252,11 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setMainSearchQuery={setMainSearchQuery}
           handleMainSearchSubmit={handleMainSearchSubmit}
           currentUser={currentUser}
-          onDeleteReport={(id) => setReports(prev => prev.filter(r => r.id !== id))}
+          onDeleteReport={(id) => {
+            setReports(prev => prev.filter(r => r.id !== id));
+            setShowReportDeletedToast(true);
+            setTimeout(() => setShowReportDeletedToast(false), 4000);
+          }}
           onNewCommentOnMyReport={handleNewCommentOnMyReport}
         />
       )}
@@ -1543,6 +1548,39 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             <p style={{ margin: 0, fontSize: '17px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
               Password Updated
             </p>
+            <ToastCheckmark />
+          </div>
+        )}
+
+        {/* Report Deleted Notification */}
+        {showReportDeletedToast && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '105px',
+              left: '16px',
+              right: '16px',
+              backgroundColor: '#0D2B4E',
+              borderRadius: '20px',
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              boxShadow: '0px 12px 36px rgba(0, 0, 0, 0.35)',
+              zIndex: 2000,
+              pointerEvents: 'auto',
+              animation: 'reportToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+            }}
+          >
+            <div>
+              <p style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: '#FFFFFF', lineHeight: '1.3' }}>
+                Report deleted
+              </p>
+              <p style={{ margin: '4px 0 0 0', fontSize: '13px', fontWeight: '400', color: 'rgba(255,255,255,0.75)', lineHeight: '1.45' }}>
+                Your report has been removed
+              </p>
+            </div>
             <ToastCheckmark />
           </div>
         )}
