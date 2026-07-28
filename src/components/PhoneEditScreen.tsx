@@ -69,17 +69,13 @@ export default function PhoneEditScreen({ currentPhone, onBack, onSave }: PhoneE
           </h2>
           <button
             type="button"
-            onClick={() => { setValue(currentPhone); setEditing(true); }}
+            onClick={() => { setValue(currentPhone); setEditing(!editing); }}
             style={{
-              width: '48px', height: '48px', borderRadius: '50%', backgroundColor: '#FFFFFF', border: 'none',
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', justifySelf: 'end',
+              justifySelf: 'end', border: 'none', background: 'none', cursor: 'pointer',
+              fontSize: '17px', fontWeight: '600', color: '#0B4C7A',
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            {editing ? 'Done' : 'Edit'}
           </button>
         </div>
       </div>
