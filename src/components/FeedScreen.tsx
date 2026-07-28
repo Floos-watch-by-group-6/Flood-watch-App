@@ -77,7 +77,7 @@ function toFeedPosts(reports: FloodReport[]): FeedPost[] {
     locationName: r.locationName,
     severity: r.waterLevel,
     status: r.status,
-    description: "Recovery days hit different when the setup is this clean 🌿☀️",
+    description: r.description || '',
     images: r.images || (r.imageUrl ? [r.imageUrl] : []),
     commentCount: 0,
     reportedBy: r.reportedBy,
