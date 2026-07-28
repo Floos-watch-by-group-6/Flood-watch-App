@@ -515,8 +515,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   margin: '8px 0 0 0',
                   fontSize: '15px',
                   color: 'rgba(255, 255, 255, 0.7)',
-                  fontFamily: '"Segoe Script", "Bradley Hand", "Brush Script MT", cursive',
-                  fontStyle: 'italic',
+                  fontFamily: '"Hearthy", cursive',
                 }}>
                   Developed by Group 6
                 </p>

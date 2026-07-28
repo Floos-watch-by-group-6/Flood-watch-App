@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Hearthy';
+  src: url('./assets/Hearthy.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* ==========================================================================
    FloodWatch Design System — tokens
    Source: FloodWatch Design System — Developer Handoff (Figma eine9ckfdOIPrSkTeUUJrk)
