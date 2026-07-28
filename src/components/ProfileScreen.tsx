@@ -9,6 +9,7 @@ interface ProfileScreenProps {
   verifiedCount: number;
   areasCount: number;
   getUserInitials: (name: string) => string;
+  onEditUsername: () => void;
   onOpenPersonalInfo: () => void;
   onOpenPrivacySecurity: () => void;
   onOpenLocationPreferences: () => void;
@@ -77,7 +78,7 @@ function SettingsRow({ icon, title, subtitle, danger, onClick }: SettingsRowProp
   );
 }
 
-export default function ProfileScreen({ currentUser, location, reportsCount, confirmationsCount, verifiedCount, areasCount, getUserInitials, onOpenPersonalInfo, onOpenPrivacySecurity, onOpenLocationPreferences, onOpenHelpSupport, onLogout }: ProfileScreenProps) {
+export default function ProfileScreen({ currentUser, location, reportsCount, confirmationsCount, verifiedCount, areasCount, getUserInitials, onEditUsername, onOpenPersonalInfo, onOpenPrivacySecurity, onOpenLocationPreferences, onOpenHelpSupport, onLogout }: ProfileScreenProps) {
   return (
     <div style={{
       position: 'absolute',
@@ -124,7 +125,7 @@ export default function ProfileScreen({ currentUser, location, reportsCount, con
       <div style={{ textAlign: 'center', marginTop: '14px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '9px' }}>
           <span style={{ fontSize: '22px', fontWeight: 600, color: '#1F2430', letterSpacing: '-0.01em' }}>@{currentUser}</span>
-          <button style={{
+          <button onClick={onEditUsername} style={{
             width: '30px', height: '26px', borderRadius: '8px', backgroundColor: '#DCE4EA',
             border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>

@@ -1382,6 +1382,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             verifiedCount={reports.filter(r => r.reportedBy === currentUser && r.status === 'Verified').length}
             areasCount={new Set(reports.filter(r => r.reportedBy === currentUser).map(r => r.locationName)).size}
             getUserInitials={getUserInitials}
+            onEditUsername={() => setProfileSubPage('username')}
             onOpenPersonalInfo={() => setProfileSubPage('personalInfo')}
             onOpenPrivacySecurity={() => setProfileSubPage('privacySecurity')}
             onOpenLocationPreferences={() => setProfileSubPage('locationPreferences')}
