@@ -152,22 +152,33 @@ export default function FeedScreen({
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
-  // Fetch real comment counts for every backend-synced post.
+  // Poll comment counts for all backend-synced posts so the count updates
+  // in real time as comments arrive, without requiring a page refresh.
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
-    reports.forEach(r => {
-      if (!r.backendId) return;
-      fetch(`${COMMENTS_API_URL}/${r.backendId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.ok ? res.json() : [])
-        .then((data: unknown) => {
-          const count = Array.isArray(data) ? data.length : 0;
-          setCommentCounts(prev => ({ ...prev, [r.backendId!]: count }));
+    const backendReports = reports.filter(r => r.backendId);
+    if (backendReports.length === 0) return;
+    let cancelled = false;
+
+    const fetchCounts = () => {
+      backendReports.forEach(r => {
+        fetch(`${COMMENTS_API_URL}/${r.backendId}`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch(() => {});
-    });
+          .then(res => res.ok ? res.json() : [])
+          .then((data: unknown) => {
+            if (cancelled) return;
+            const count = Array.isArray(data) ? data.length : 0;
+            setCommentCounts(prev => ({ ...prev, [r.backendId!]: count }));
+          })
+          .catch(() => {});
+      });
+    };
+
+    fetchCounts();
+    const intervalId = setInterval(fetchCounts, 10000);
+    return () => { cancelled = true; clearInterval(intervalId); };
   }, [reports]);
 
   // Merge real reports with sample posts (real posts first, most recently reported first)
