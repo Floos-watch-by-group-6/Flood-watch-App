@@ -17,4 +17,12 @@ export interface FloodReport {
   timeActive: string;
   createdAt: number;
 }
+export interface FloodConfirmAlert {
+  backendId: string;
+  reportId: number;
+  locationName: string;
+  waterLevel: 'Low' | 'Medium' | 'High';
+  confirmedAt: number;
+}
+
 export type TabType = 'maps' | 'feed' | 'report' | 'alerts' | 'profile';

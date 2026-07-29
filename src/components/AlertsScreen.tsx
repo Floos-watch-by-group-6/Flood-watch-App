@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
-import type { FloodReport } from '../type';
+import type { FloodReport, FloodConfirmAlert } from '../type';
 
 // Read/unread state is persisted per-account so "Mark all read" survives a
 // refresh or signing in again, instead of resetting to hardcoded demo data.
@@ -32,6 +32,15 @@ function WarningIcon() {
   );
 }
 
+function ConfirmedIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke="#16A34A" strokeWidth="1.8" />
+      <path d="M7 12.5l3.5 3.5L17 8" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function ChevronRight() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -48,6 +57,47 @@ function ChevronDown({ collapsed }: { collapsed?: boolean }) {
     >
       <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function ConfirmAlertRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void }) {
+  return (
+    <div
+      onClick={() => onMarkRead(alert.backendId)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: unread ? '#ECFDF5' : '#FFFFFF',
+        border: '1px solid #EFEFEF',
+        borderRadius: '20px',
+        padding: '14px',
+        marginBottom: '14px',
+        cursor: 'pointer',
+      }}
+    >
+      {unread && (
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#16A34A', flexShrink: 0 }} />
+      )}
+      <div style={{
+        width: '38px', height: '38px', borderRadius: '50%',
+        backgroundColor: '#DCFCE7',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <ConfirmedIcon />
+      </div>
+      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: '13px', fontWeight: '700', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
+            Flood confirmed near you
+          </span>
+        </div>
+        <p style={{ margin: '3px 0 0 0', fontSize: '13px', color: '#9CA3AF', lineHeight: '1.4' }}>
+          {alert.locationName}, {alert.waterLevel} severity · verified by community
+        </p>
+      </div>
+      <ChevronRight />
+    </div>
   );
 }
 
@@ -103,31 +153,62 @@ function AlertRow({ report, unread, onOpen }: { report: FloodReport; unread: boo
 
 interface AlertsScreenProps {
   reports: FloodReport[];
+  confirmAlerts: FloodConfirmAlert[];
   currentUser: string;
   onOpenReport: (report: FloodReport) => void;
 }
 
-export default function AlertsScreen({ reports, currentUser, onOpenReport }: AlertsScreenProps) {
+type AlertEntry =
+  | { kind: 'report'; report: FloodReport; sortKey: number }
+  | { kind: 'confirmed'; alert: FloodConfirmAlert; sortKey: number };
+
+export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOpenReport }: AlertsScreenProps) {
   const [readIds, setReadIds] = useState<Set<number>>(() => loadReadAlertIds());
+  const [readConfirmIds, setReadConfirmIds] = useState<Set<string>>(() => {
+    try {
+      const key = `floodwatch_read_confirm_${localStorage.getItem('userId') || 'anon'}`;
+      const raw = localStorage.getItem(key);
+      return raw ? new Set(JSON.parse(raw)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
   const [collapsed, setCollapsed] = useState<{ Today: boolean; Yesterday: boolean; Earlier: boolean }>({
     Today: false, Yesterday: false, Earlier: false,
   });
 
-  // Only real reports from other users become alerts — you don't need to be
-  // alerted about your own report.
   const alertReports = useMemo(
-    () => reports.filter(r => r.reportedBy !== currentUser).sort((a, b) => b.createdAt - a.createdAt),
+    () => reports.filter(r => r.reportedBy !== currentUser),
     [reports, currentUser]
   );
 
-  const hasUnread = alertReports.some(r => !readIds.has(r.id));
+  const allEntries = useMemo((): AlertEntry[] => {
+    const entries: AlertEntry[] = [
+      ...alertReports.map(r => ({ kind: 'report' as const, report: r, sortKey: r.createdAt })),
+      ...confirmAlerts.map(a => ({ kind: 'confirmed' as const, alert: a, sortKey: a.confirmedAt })),
+    ];
+    return entries.sort((a, b) => b.sortKey - a.sortKey);
+  }, [alertReports, confirmAlerts]);
 
-  const markAsRead = (id: number) => {
+  const hasUnread =
+    alertReports.some(r => !readIds.has(r.id)) ||
+    confirmAlerts.some(a => !readConfirmIds.has(a.backendId));
+
+  const markReportRead = (id: number) => {
     setReadIds(prev => {
       if (prev.has(id)) return prev;
       const next = new Set(prev);
       next.add(id);
       saveReadAlertIds(next);
+      return next;
+    });
+  };
+
+  const markConfirmRead = (backendId: string) => {
+    setReadConfirmIds(prev => {
+      if (prev.has(backendId)) return prev;
+      const next = new Set(prev);
+      next.add(backendId);
+      const key = `floodwatch_read_confirm_${localStorage.getItem('userId') || 'anon'}`;
+      localStorage.setItem(key, JSON.stringify(Array.from(next)));
       return next;
     });
   };
@@ -139,13 +220,20 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
       saveReadAlertIds(next);
       return next;
     });
+    setReadConfirmIds(prev => {
+      const next = new Set(prev);
+      confirmAlerts.forEach(a => next.add(a.backendId));
+      const key = `floodwatch_read_confirm_${localStorage.getItem('userId') || 'anon'}`;
+      localStorage.setItem(key, JSON.stringify(Array.from(next)));
+      return next;
+    });
   };
 
   const toggleSection = (section: 'Today' | 'Yesterday' | 'Earlier') =>
     setCollapsed(c => ({ ...c, [section]: !c[section] }));
 
   const openReport = (report: FloodReport) => {
-    markAsRead(report.id);
+    markReportRead(report.id);
     onOpenReport(report);
   };
 
@@ -153,14 +241,14 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startOfYesterday = startOfToday - 24 * 60 * 60 * 1000;
 
-  const todayReports = alertReports.filter(r => r.createdAt >= startOfToday);
-  const yesterdayReports = alertReports.filter(r => r.createdAt >= startOfYesterday && r.createdAt < startOfToday);
-  const earlierReports = alertReports.filter(r => r.createdAt < startOfYesterday);
+  const todayEntries = allEntries.filter(e => e.sortKey >= startOfToday);
+  const yesterdayEntries = allEntries.filter(e => e.sortKey >= startOfYesterday && e.sortKey < startOfToday);
+  const earlierEntries = allEntries.filter(e => e.sortKey < startOfYesterday);
 
-  const sections: { key: 'Today' | 'Yesterday' | 'Earlier'; label: string; items: FloodReport[] }[] = [
-    { key: 'Today', label: 'Today', items: todayReports },
-    { key: 'Yesterday', label: 'Yesterday', items: yesterdayReports },
-    { key: 'Earlier', label: 'Earlier', items: earlierReports },
+  const sections: { key: 'Today' | 'Yesterday' | 'Earlier'; label: string; items: AlertEntry[] }[] = [
+    { key: 'Today', label: 'Today', items: todayEntries },
+    { key: 'Yesterday', label: 'Yesterday', items: yesterdayEntries },
+    { key: 'Earlier', label: 'Earlier', items: earlierEntries },
   ];
 
   return (
@@ -218,7 +306,7 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
 
       {/* Alerts List */}
       <div style={{ flex: 1, padding: '4px 16px 140px 16px' }}>
-        {alertReports.length === 0 && (
+        {allEntries.length === 0 && (
           <p style={{ textAlign: 'center', color: '#9CA3AF', fontSize: '14px', marginTop: '48px', lineHeight: '1.5' }}>
             No alerts yet.<br />You'll see one here when someone reports flooding.
           </p>
@@ -233,9 +321,23 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
               <span style={{ fontSize: '18px', fontWeight: '500', color: '#9CA3AF' }}>{label}</span>
               <ChevronDown collapsed={collapsed[key]} />
             </div>
-            {!collapsed[key] && items.map(report => (
-              <AlertRow key={report.id} report={report} unread={!readIds.has(report.id)} onOpen={openReport} />
-            ))}
+            {!collapsed[key] && items.map(entry =>
+              entry.kind === 'confirmed' ? (
+                <ConfirmAlertRow
+                  key={`c-${entry.alert.backendId}`}
+                  alert={entry.alert}
+                  unread={!readConfirmIds.has(entry.alert.backendId)}
+                  onMarkRead={markConfirmRead}
+                />
+              ) : (
+                <AlertRow
+                  key={`r-${entry.report.id}`}
+                  report={entry.report}
+                  unread={!readIds.has(entry.report.id)}
+                  onOpen={openReport}
+                />
+              )
+            )}
           </div>
         ))}
       </div>

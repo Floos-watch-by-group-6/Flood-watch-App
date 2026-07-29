@@ -38,7 +38,7 @@ import EmailEditScreen from './components/EmailEditScreen';
 import PhotoPermissionModal from './components/PhotoPermissionModal';
 import LocationPermissionModal from './components/LocationPermissionModal';
 import NotificationPermissionModal from './components/NotificationPermissionModal';
-import type { FloodReport } from './type';
+import type { FloodReport, FloodConfirmAlert } from './type';
 
 
 const MAPTILER_KEY = 'kaeXCvS4tEksnniL7N1x';
@@ -205,6 +205,8 @@ export default function App() {
   
   const [reports, setReports] = useState<FloodReport[]>(INITIAL_FLOOD_REPORTS);
   const reportsRef = useRef<FloodReport[]>(reports);
+  const [floodConfirmAlerts, setFloodConfirmAlerts] = useState<FloodConfirmAlert[]>([]);
+  const confirmedAlertIdsRef = useRef<Set<string>>(new Set());
   const [selectedReport, setSelectedReport] = useState<FloodReport | null>(null);
   const [viewingOwnReport, setViewingOwnReport] = useState<FloodReport | null>(null);
   const [editingReportId, setEditingReportId] = useState<number | null>(null);
@@ -263,6 +265,7 @@ export default function App() {
     );
 
     const updates = new Map<string, FloodReport>();
+    const newlyConfirmed: FloodConfirmAlert[] = [];
     for (const b of backendReports) {
       const existing = knownByBackendId.get(b._id);
       if (!existing) continue;
@@ -273,6 +276,21 @@ export default function App() {
         status: mergedCount >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
         ...(b.photoUrl ? { imageUrl: b.photoUrl, images: [b.photoUrl] } : {}),
       });
+      if (
+        existing.status !== 'Verified' &&
+        mergedCount >= VERIFICATION_THRESHOLD &&
+        existing.reportedBy !== currentUser &&
+        !confirmedAlertIdsRef.current.has(b._id)
+      ) {
+        confirmedAlertIdsRef.current.add(b._id);
+        newlyConfirmed.push({
+          backendId: b._id,
+          reportId: existing.id,
+          locationName: existing.locationName,
+          waterLevel: existing.waterLevel,
+          confirmedAt: Date.now(),
+        });
+      }
     }
 
     const myUserId = localStorage.getItem('userId');
@@ -310,11 +328,16 @@ export default function App() {
       })
     );
 
-    if (updates.size === 0 && added.length === 0) return;
-    setReports(prev => {
-      const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
-      return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
-    });
+    if (updates.size === 0 && added.length === 0 && newlyConfirmed.length === 0) return;
+    if (updates.size > 0 || added.length > 0) {
+      setReports(prev => {
+        const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
+        return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
+      });
+    }
+    if (newlyConfirmed.length > 0) {
+      setFloodConfirmAlerts(prev => [...prev, ...newlyConfirmed]);
+    }
   };
 
   // Fetch reports near a specific place the user picked (search result),
@@ -1310,6 +1333,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
       {currentTab === 'alerts' && !isReporting && (
         <AlertsScreen
           reports={reports}
+          confirmAlerts={floodConfirmAlerts}
           currentUser={currentUser}
           onOpenReport={(report) => {
             setCurrentTab('maps');
