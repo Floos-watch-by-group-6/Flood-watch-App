@@ -1284,6 +1284,14 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           handleMainSearchSubmit={handleMainSearchSubmit}
           currentUser={currentUser}
           onDeleteReport={(id) => {
+            const report = reports.find(r => r.id === id);
+            if (report?.backendId) {
+              const token = localStorage.getItem('token');
+              fetch(`${REPORTS_API_URL}/${report.backendId}`, {
+                method: 'DELETE',
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              }).catch(() => {});
+            }
             setReports(prev => prev.filter(r => r.id !== id));
             setShowReportDeletedToast(true);
             setTimeout(() => setShowReportDeletedToast(false), 4000);
