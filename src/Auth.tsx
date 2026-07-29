@@ -174,6 +174,24 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     }
   };
 
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      const newOtp = [...otp];
+      newOtp[index - 1] = '';
+      setOtp(newOtp);
+      document.getElementById(`otp-input-${index - 1}`)?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!text) return;
+    const newOtp = Array(6).fill('').map((_, i) => text[i] || '');
+    setOtp(newOtp);
+    document.getElementById(`otp-input-${Math.min(text.length, 5)}`)?.focus();
+  };
+
   // Create the account on the backend, then move to OTP verification.
   const handleCreateAccount = async () => {
     if (!agreedToTerms) return;
@@ -271,6 +289,24 @@ export default function Auth({ onAuthComplete }: AuthProps) {
       const nextInput = document.getElementById(`reset-otp-input-${index + 1}`);
       nextInput?.focus();
     }
+  };
+
+  const handleResetOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !resetOtp[index] && index > 0) {
+      const next = [...resetOtp];
+      next[index - 1] = '';
+      setResetOtp(next);
+      document.getElementById(`reset-otp-input-${index - 1}`)?.focus();
+    }
+  };
+
+  const handleResetOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!text) return;
+    const next = Array(6).fill('').map((_, i) => text[i] || '');
+    setResetOtp(next);
+    document.getElementById(`reset-otp-input-${Math.min(text.length, 5)}`)?.focus();
   };
 
   // Step 1: request a reset code for the given email (backend).
@@ -960,10 +996,13 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   key={idx}
                   id={`reset-otp-input-${idx}`}
                   type="text"
+                  inputMode="numeric"
                   maxLength={1}
                   placeholder="0"
                   value={digit}
                   onChange={(e) => handleResetOtpChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleResetOtpKeyDown(idx, e)}
+                  onPaste={handleResetOtpPaste}
                   style={{
                     flex: 1,
                     minWidth: 0,
@@ -1806,10 +1845,13 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                         key={idx}
                         id={`otp-input-${idx}`}
                         type="text"
+                        inputMode="numeric"
                         maxLength={1}
                         placeholder="0"
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                        onPaste={handleOtpPaste}
                         style={{
                           flex: 1,
                           minWidth: 0,
