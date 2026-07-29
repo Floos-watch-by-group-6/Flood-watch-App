@@ -279,7 +279,6 @@ export default function App() {
       if (
         existing.status !== 'Verified' &&
         mergedCount >= VERIFICATION_THRESHOLD &&
-        existing.reportedBy !== currentUser &&
         !confirmedAlertIdsRef.current.has(b._id)
       ) {
         confirmedAlertIdsRef.current.add(b._id);
@@ -289,6 +288,7 @@ export default function App() {
           locationName: existing.locationName,
           waterLevel: existing.waterLevel,
           confirmedAt: Date.now(),
+          kind: existing.reportedBy === currentUser ? 'own_verified' : 'confirmed',
         });
       }
     }

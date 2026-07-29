@@ -23,6 +23,7 @@ export interface FloodConfirmAlert {
   locationName: string;
   waterLevel: 'Low' | 'Medium' | 'High';
   confirmedAt: number;
+  kind: 'confirmed' | 'own_verified';
 }
 
 export type TabType = 'maps' | 'feed' | 'report' | 'alerts' | 'profile';

@@ -60,6 +60,45 @@ function ChevronDown({ collapsed }: { collapsed?: boolean }) {
   );
 }
 
+function OwnVerifiedRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void }) {
+  return (
+    <div
+      onClick={() => onMarkRead(alert.backendId)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: unread ? '#FFFBEB' : '#FFFFFF',
+        border: '1px solid #EFEFEF',
+        borderRadius: '20px',
+        padding: '14px',
+        marginBottom: '14px',
+        cursor: 'pointer',
+      }}
+    >
+      {unread && (
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F59E0B', flexShrink: 0 }} />
+      )}
+      <div style={{
+        width: '38px', height: '38px', borderRadius: '50%',
+        backgroundColor: '#FEF3C7',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z" stroke="#F59E0B" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+        <span style={{ fontSize: '13px', fontWeight: '700', color: '#111827' }}>Your report has been verified</span>
+        <p style={{ margin: '3px 0 0 0', fontSize: '13px', color: '#9CA3AF', lineHeight: '1.4' }}>
+          {alert.locationName} · confirmed by 3 users
+        </p>
+      </div>
+      <ChevronRight />
+    </div>
+  );
+}
+
 function ConfirmAlertRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void }) {
   return (
     <div
@@ -321,23 +360,33 @@ export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOp
               <span style={{ fontSize: '18px', fontWeight: '500', color: '#9CA3AF' }}>{label}</span>
               <ChevronDown collapsed={collapsed[key]} />
             </div>
-            {!collapsed[key] && items.map(entry =>
-              entry.kind === 'confirmed' ? (
-                <ConfirmAlertRow
-                  key={`c-${entry.alert.backendId}`}
-                  alert={entry.alert}
-                  unread={!readConfirmIds.has(entry.alert.backendId)}
-                  onMarkRead={markConfirmRead}
-                />
-              ) : (
+            {!collapsed[key] && items.map(entry => {
+              if (entry.kind === 'confirmed') {
+                return entry.alert.kind === 'own_verified' ? (
+                  <OwnVerifiedRow
+                    key={`v-${entry.alert.backendId}`}
+                    alert={entry.alert}
+                    unread={!readConfirmIds.has(entry.alert.backendId)}
+                    onMarkRead={markConfirmRead}
+                  />
+                ) : (
+                  <ConfirmAlertRow
+                    key={`c-${entry.alert.backendId}`}
+                    alert={entry.alert}
+                    unread={!readConfirmIds.has(entry.alert.backendId)}
+                    onMarkRead={markConfirmRead}
+                  />
+                );
+              }
+              return (
                 <AlertRow
                   key={`r-${entry.report.id}`}
                   report={entry.report}
                   unread={!readIds.has(entry.report.id)}
                   onOpen={openReport}
                 />
-              )
-            )}
+              );
+            })}
           </div>
         ))}
       </div>
