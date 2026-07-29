@@ -465,7 +465,11 @@ export default function App() {
     }
   }, [showNotificationPermissionModal]);
 
-  const [userVotes, setUserVotes] = useState<Record<number, 'yes' | 'no'>>({});
+  const [userVotes, setUserVotes] = useState<Record<number, 'yes' | 'no'>>(() => {
+    const user = localStorage.getItem('currentUser');
+    if (!user) return {};
+    try { return JSON.parse(localStorage.getItem(`floodwatch_votes_${user}`) || '{}'); } catch { return {}; }
+  });
 
   const handleAuthComplete = (username: string, isNewSignup?: boolean, email?: string) => {
     const resolvedUsername = username || 'User';
@@ -475,6 +479,10 @@ export default function App() {
       setAccountEmail(email);
       localStorage.setItem('accountEmail', email);
     }
+    try {
+      const stored = localStorage.getItem(`floodwatch_votes_${resolvedUsername}`);
+      setUserVotes(stored ? JSON.parse(stored) : {});
+    } catch { setUserVotes({}); }
     setIsAuthenticated(true);
     setCurrentTab('maps');
     if (isNewSignup) setShowLocationPermissionModal(true);
@@ -487,9 +495,15 @@ export default function App() {
     localStorage.removeItem('userId');
     setIsAuthenticated(false);
     setCurrentUser('');
+    setUserVotes({});
     setCurrentTab('maps');
     setIsReporting(false);
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    localStorage.setItem(`floodwatch_votes_${currentUser}`, JSON.stringify(userVotes));
+  }, [userVotes, currentUser]);
 
   // If the app sits backgrounded (tab hidden, browser minimized) for more
   // than BACKGROUND_LOGOUT_MS, require signing in again on return instead of
