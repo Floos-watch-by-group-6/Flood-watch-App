@@ -410,6 +410,7 @@ export default function App() {
   const [photoLibraryGranted, setPhotoLibraryGranted] = useState<boolean>(false);
   const [pendingPhotoTarget, setPendingPhotoTarget] = useState<'report' | 'confirm' | null>(null);
   const [showCameraCapture, setShowCameraCapture] = useState<boolean>(false);
+  const [showConfirmCameraCapture, setShowConfirmCameraCapture] = useState<boolean>(false);
   const [showLocationPermissionModal, setShowLocationPermissionModal] = useState<boolean>(false);
   const [showNotificationPermissionModal, setShowNotificationPermissionModal] = useState<boolean>(false);
 
@@ -1243,6 +1244,21 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         />
       )}
 
+      {showConfirmCameraCapture && selectedReport && (
+        <CameraCaptureScreen
+          maxPhotos={1}
+          onComplete={(photos) => {
+            setShowConfirmCameraCapture(false);
+            if (photos.length > 0) {
+              applyConfirmation(selectedReport.id, photos[0]);
+              setUserAddedPhoto(true);
+              setConfirmStep('confirmed_view');
+            }
+          }}
+          onBack={() => setShowConfirmCameraCapture(false)}
+        />
+      )}
+
       <div ref={mapContainerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }} />
       
       {isReporting && reportingStage === 'adjust' && (
@@ -1965,7 +1981,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       </button>
 
                       <button
-                        onClick={() => confirmFileInputRef.current?.click()}
+                        onClick={() => setShowConfirmCameraCapture(true)}
                         style={{
                           flex: 1,
                           padding: '13px',
