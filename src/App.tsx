@@ -1965,7 +1965,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       </button>
 
                       <button
-                        onClick={() => requestPhotoAccess('confirm')}
+                        onClick={() => confirmFileInputRef.current?.click()}
                         style={{
                           flex: 1,
                           padding: '13px',
