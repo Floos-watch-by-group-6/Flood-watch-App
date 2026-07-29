@@ -216,7 +216,7 @@ export default function App() {
 
   const [confirmStep, setConfirmStep] = useState<ConfirmStep>('initial');
   const [userAddedPhoto, setUserAddedPhoto] = useState<boolean>(false);
-  const [showCommunityPhotos, setShowCommunityPhotos] = useState<boolean>(true);
+  const [showCommunityPhotos, setShowCommunityPhotos] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showReportPostedToast, setShowReportPostedToast] = useState<boolean>(false);
   const [reportPostedIsEdit, setReportPostedIsEdit] = useState<boolean>(false);
@@ -821,7 +821,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setSelectedReport(report);
           setConfirmStep('initial');
           setUserAddedPhoto(false);
-          setShowCommunityPhotos(true);
+          setShowCommunityPhotos(false);
         }
         mapRef.current?.flyTo({
           center: report.coordinates,
@@ -1319,7 +1319,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               setSelectedReport(report);
               setConfirmStep('initial');
               setUserAddedPhoto(false);
-              setShowCommunityPhotos(true);
+              setShowCommunityPhotos(false);
             }
             mapRef.current?.flyTo({ center: report.coordinates, zoom: 15, essential: true });
           }}
@@ -1832,7 +1832,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'center', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB' }}>
+                <div
+                  onClick={() => setShowCommunityPhotos(v => !v)}
+                  style={{ textAlign: 'center', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB', cursor: 'pointer', userSelect: 'none' }}
+                >
                   <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: '500' }}>Photos</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -1841,7 +1844,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       <path d="M8 6l1.2-2h5.6L16 6" stroke="#F97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span style={{ fontSize: '17px', fontWeight: '700', color: '#111827' }}>{selectedReport.photosCount}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '1px' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '1px', transition: 'transform 0.22s ease', transform: showCommunityPhotos ? 'rotate(180deg)' : 'none' }}>
                       <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
@@ -1859,6 +1862,19 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   </div>
                 </div>
               </div>
+
+              {showCommunityPhotos && (
+                <div style={{ marginBottom: '18px' }}>
+                  <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                    {(selectedReport.images || [selectedReport.imageUrl]).map((img, i) => (
+                      <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
+                        <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {confirmStep === 'initial' && (
                 selectedReport.status === 'Verified' ? (
@@ -1973,26 +1989,6 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
               {confirmStep === 'add_photo' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
-                    <button
-                      onClick={() => setShowCommunityPhotos(v => !v)}
-                      style={{ border: 'none', background: 'none', padding: 0, fontSize: '13px', color: '#9CA3AF', fontWeight: '500', cursor: 'pointer' }}
-                    >
-                      {showCommunityPhotos ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-
-                  {showCommunityPhotos && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '18px' }}>
-                      {(selectedReport.images || [selectedReport.imageUrl]).map((img, i) => (
-                        <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
-                          <img src={img} alt="community capture" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
                   <div style={{ backgroundColor: '#F3F4F6', borderRadius: '18px', padding: '16px' }}>
                     <p style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '500', color: '#6B7280' }}>
                       Want to add a photo? <span style={{ color: '#9CA3AF', fontWeight: 400 }}>(optional)</span>
@@ -2048,26 +2044,6 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
               {confirmStep === 'confirmed_view' && (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
-                    <button
-                      onClick={() => setShowCommunityPhotos(v => !v)}
-                      style={{ border: 'none', background: 'none', padding: 0, fontSize: '13px', color: '#9CA3AF', fontWeight: '500', cursor: 'pointer' }}
-                    >
-                      {showCommunityPhotos ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-
-                  {showCommunityPhotos && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '18px' }}>
-                      {(selectedReport.images || [selectedReport.imageUrl]).map((img, i) => (
-                        <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
-                          <img src={img} alt="community capture" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
                   <button
                     onClick={handleBackToMap}
                     style={{
@@ -2209,7 +2185,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'center', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB' }}>
+                <div
+                  onClick={() => setShowCommunityPhotos(v => !v)}
+                  style={{ textAlign: 'center', borderLeft: '1px solid #E5E7EB', borderRight: '1px solid #E5E7EB', cursor: 'pointer', userSelect: 'none' }}
+                >
                   <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: '500' }}>Photos</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px' }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -2218,6 +2197,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       <path d="M8 6l1.2-2h5.6L16 6" stroke="#F97316" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span style={{ fontSize: '17px', fontWeight: '700', color: '#111827' }}>{viewingOwnReport.photosCount}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '1px', transition: 'transform 0.22s ease', transform: showCommunityPhotos ? 'rotate(180deg)' : 'none' }}>
+                      <path d="M6 9l6 6 6-6" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
                 </div>
 
@@ -2233,6 +2215,19 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                   </div>
                 </div>
               </div>
+
+              {showCommunityPhotos && (
+                <div style={{ marginBottom: '18px' }}>
+                  <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                    {(viewingOwnReport.images || [viewingOwnReport.imageUrl]).map((img, i) => (
+                      <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
+                        <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
                 <button
