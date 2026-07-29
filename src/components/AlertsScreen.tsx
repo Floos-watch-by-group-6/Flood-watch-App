@@ -60,10 +60,10 @@ function ChevronDown({ collapsed }: { collapsed?: boolean }) {
   );
 }
 
-function OwnVerifiedRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void }) {
+function OwnVerifiedRow({ alert, unread, onMarkRead, onOpen }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void; onOpen?: () => void }) {
   return (
     <div
-      onClick={() => onMarkRead(alert.backendId)}
+      onClick={() => { onMarkRead(alert.backendId); onOpen?.(); }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -99,10 +99,10 @@ function OwnVerifiedRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAler
   );
 }
 
-function ConfirmAlertRow({ alert, unread, onMarkRead }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void }) {
+function ConfirmAlertRow({ alert, unread, onMarkRead, onOpen }: { alert: FloodConfirmAlert; unread: boolean; onMarkRead: (id: string) => void; onOpen?: () => void }) {
   return (
     <div
-      onClick={() => onMarkRead(alert.backendId)}
+      onClick={() => { onMarkRead(alert.backendId); onOpen?.(); }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -212,6 +212,14 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
   const [collapsed, setCollapsed] = useState<{ Today: boolean; Yesterday: boolean; Earlier: boolean }>({
     Today: false, Yesterday: false, Earlier: false,
   });
+
+  const reportsByBackendId = useMemo(() => {
+    const map = new Map<string, FloodReport>();
+    for (const r of reports) {
+      if (r.backendId) map.set(r.backendId, r);
+    }
+    return map;
+  }, [reports]);
 
   // Derive confirmation alerts directly from reports state — every verified
   // backend report becomes an alert automatically as soon as the poll updates
@@ -378,12 +386,15 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
             </div>
             {!collapsed[key] && items.map(entry => {
               if (entry.kind === 'confirmed') {
+                const sourceReport = reportsByBackendId.get(entry.alert.backendId);
+                const handleOpen = sourceReport ? () => onOpenReport(sourceReport) : undefined;
                 return entry.alert.kind === 'own_verified' ? (
                   <OwnVerifiedRow
                     key={`v-${entry.alert.backendId}`}
                     alert={entry.alert}
                     unread={!readConfirmIds.has(entry.alert.backendId)}
                     onMarkRead={markConfirmRead}
+                    onOpen={handleOpen}
                   />
                 ) : (
                   <ConfirmAlertRow
@@ -391,6 +402,7 @@ export default function AlertsScreen({ reports, currentUser, onOpenReport }: Ale
                     alert={entry.alert}
                     unread={!readConfirmIds.has(entry.alert.backendId)}
                     onMarkRead={markConfirmRead}
+                    onOpen={handleOpen}
                   />
                 );
               }

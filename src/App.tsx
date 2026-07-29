@@ -1313,10 +1313,14 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           currentUser={currentUser}
           onOpenReport={(report) => {
             setCurrentTab('maps');
-            setSelectedReport(report);
-            setConfirmStep('initial');
-            setUserAddedPhoto(false);
-            setShowCommunityPhotos(true);
+            if (report.reportedBy === currentUser) {
+              setViewingOwnReport(report);
+            } else {
+              setSelectedReport(report);
+              setConfirmStep('initial');
+              setUserAddedPhoto(false);
+              setShowCommunityPhotos(true);
+            }
             mapRef.current?.flyTo({ center: report.coordinates, zoom: 15, essential: true });
           }}
         />
