@@ -270,6 +270,7 @@ export default function App() {
         ...existing,
         confirmations: b.confirmations.yes,
         status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+        ...(b.photoUrl ? { imageUrl: b.photoUrl, images: [b.photoUrl] } : {}),
       });
     }
 
