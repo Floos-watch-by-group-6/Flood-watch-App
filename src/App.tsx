@@ -820,7 +820,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setViewingOwnReport(report);
         } else {
           setSelectedReport(report);
-          setConfirmStep('initial');
+          setConfirmStep(userVotes[report.id] === 'yes' ? 'confirmed_view' : 'initial');
           setUserAddedPhoto(false);
           setShowCommunityPhotos(false);
         }
@@ -1334,7 +1334,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               setViewingOwnReport(report);
             } else {
               setSelectedReport(report);
-              setConfirmStep('initial');
+              setConfirmStep(userVotes[report.id] === 'yes' ? 'confirmed_view' : 'initial');
               setUserAddedPhoto(false);
               setShowCommunityPhotos(false);
             }
