@@ -421,7 +421,6 @@ export default function App() {
     () => { try { return new Set(JSON.parse(localStorage.getItem('floodwatch_nudge_dismissed') || '[]')); } catch { return new Set(); } }
   );
   const nudgeDismissedIdsRef = useRef<Set<string>>(new Set());
-  const reportsRef = useRef<FloodReport[]>([]);
   const activeNudgeRef = useRef<FloodReport | null>(null);
   const [activeNudge, setActiveNudge] = useState<FloodReport | null>(null);
   const [nudgeSecondsLeft, setNudgeSecondsLeft] = useState(120);
@@ -520,7 +519,6 @@ export default function App() {
 
   // Keep nudge refs in sync so the interval closure always reads current values
   useEffect(() => { nudgeDismissedIdsRef.current = nudgeDismissedIds; }, [nudgeDismissedIds]);
-  useEffect(() => { reportsRef.current = reports; }, [reports]);
   useEffect(() => { activeNudgeRef.current = activeNudge; }, [activeNudge]);
 
   // Record the first time each report transitions to Verified
