@@ -1407,17 +1407,36 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         {!(currentTab === 'profile' && profileSubPage === 'defaultZone') && (
           <BottomNav
             currentTab={currentTab} handleMapsTabClick={handleMapsTabClick} setCurrentTab={setCurrentTab}
-            openReportingWorkflow={async () => {
-              if (mapRef.current) {
-                const center = mapRef.current.getCenter();
-                setCurrentCoords([center.lng, center.lat]);
-                setNewLocationName(await fetchLocationName(center.lng, center.lat));
-              }
+            openReportingWorkflow={() => {
               setCurrentTab('report');
               setIsReporting(true);
               setNewWaterLevel(null);
               setCapturedImages([]);
               setShowCameraCapture(true);
+              setNewLocationName('Locating...');
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  async (position) => {
+                    const { longitude, latitude } = position.coords;
+                    setCurrentCoords([longitude, latitude]);
+                    mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 16, essential: true });
+                    setNewLocationName(await fetchLocationName(longitude, latitude));
+                  },
+                  () => {
+                    // fallback to map center if GPS denied
+                    if (mapRef.current) {
+                      const c = mapRef.current.getCenter();
+                      setCurrentCoords([c.lng, c.lat]);
+                      fetchLocationName(c.lng, c.lat).then(setNewLocationName);
+                    }
+                  },
+                  { enableHighAccuracy: true, timeout: 8000 }
+                );
+              } else if (mapRef.current) {
+                const c = mapRef.current.getCenter();
+                setCurrentCoords([c.lng, c.lat]);
+                fetchLocationName(c.lng, c.lat).then(setNewLocationName);
+              }
             }}
           />
         )}
