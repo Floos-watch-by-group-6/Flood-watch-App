@@ -205,8 +205,21 @@ export default function App() {
   
   const [reports, setReports] = useState<FloodReport[]>(INITIAL_FLOOD_REPORTS);
   const reportsRef = useRef<FloodReport[]>(reports);
-  const [floodConfirmAlerts, setFloodConfirmAlerts] = useState<FloodConfirmAlert[]>([]);
-  const confirmedAlertIdsRef = useRef<Set<string>>(new Set());
+  const [floodConfirmAlerts, setFloodConfirmAlerts] = useState<FloodConfirmAlert[]>(() => {
+    try {
+      const uid = localStorage.getItem('userId') || 'anon';
+      const raw = localStorage.getItem(`floodwatch_confirm_alerts_${uid}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const confirmedAlertIdsRef = useRef<Set<string>>((() => {
+    try {
+      const uid = localStorage.getItem('userId') || 'anon';
+      const raw = localStorage.getItem(`floodwatch_confirm_alerts_${uid}`);
+      const saved: FloodConfirmAlert[] = raw ? JSON.parse(raw) : [];
+      return new Set<string>(saved.map(a => a.backendId));
+    } catch { return new Set<string>(); }
+  })());
   const [selectedReport, setSelectedReport] = useState<FloodReport | null>(null);
   const [viewingOwnReport, setViewingOwnReport] = useState<FloodReport | null>(null);
   const [editingReportId, setEditingReportId] = useState<number | null>(null);
@@ -328,6 +341,28 @@ export default function App() {
       })
     );
 
+    // Also detect alerts for reports added fresh this session that are already Verified.
+    // This covers: page reload after verification, or a user opening the app after 3 confirms happened.
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    for (const addedReport of added) {
+      if (
+        addedReport.status === 'Verified' &&
+        addedReport.backendId &&
+        addedReport.createdAt > oneDayAgo &&
+        !confirmedAlertIdsRef.current.has(addedReport.backendId)
+      ) {
+        confirmedAlertIdsRef.current.add(addedReport.backendId);
+        newlyConfirmed.push({
+          backendId: addedReport.backendId,
+          reportId: addedReport.id,
+          locationName: addedReport.locationName,
+          waterLevel: addedReport.waterLevel,
+          confirmedAt: addedReport.createdAt + 1,
+          kind: addedReport.reportedBy === currentUser ? 'own_verified' : 'confirmed',
+        });
+      }
+    }
+
     if (updates.size === 0 && added.length === 0 && newlyConfirmed.length === 0) return;
     if (updates.size > 0 || added.length > 0) {
       setReports(prev => {
@@ -336,7 +371,12 @@ export default function App() {
       });
     }
     if (newlyConfirmed.length > 0) {
-      setFloodConfirmAlerts(prev => [...prev, ...newlyConfirmed]);
+      setFloodConfirmAlerts(prev => {
+        const updated = [...prev, ...newlyConfirmed];
+        const uid = localStorage.getItem('userId') || 'anon';
+        localStorage.setItem(`floodwatch_confirm_alerts_${uid}`, JSON.stringify(updated));
+        return updated;
+      });
     }
   };
 
