@@ -192,7 +192,6 @@ function AlertRow({ report, unread, onOpen }: { report: FloodReport; unread: boo
 
 interface AlertsScreenProps {
   reports: FloodReport[];
-  confirmAlerts: FloodConfirmAlert[];
   currentUser: string;
   onOpenReport: (report: FloodReport) => void;
 }
@@ -201,7 +200,7 @@ type AlertEntry =
   | { kind: 'report'; report: FloodReport; sortKey: number }
   | { kind: 'confirmed'; alert: FloodConfirmAlert; sortKey: number };
 
-export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOpenReport }: AlertsScreenProps) {
+export default function AlertsScreen({ reports, currentUser, onOpenReport }: AlertsScreenProps) {
   const [readIds, setReadIds] = useState<Set<number>>(() => loadReadAlertIds());
   const [readConfirmIds, setReadConfirmIds] = useState<Set<string>>(() => {
     try {
@@ -214,6 +213,23 @@ export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOp
     Today: false, Yesterday: false, Earlier: false,
   });
 
+  // Derive confirmation alerts directly from reports state — every verified
+  // backend report becomes an alert automatically as soon as the poll updates
+  // its status, with no separate detection or session-lifetime constraint.
+  const verifiedAlerts = useMemo((): FloodConfirmAlert[] =>
+    reports
+      .filter(r => r.status === 'Verified' && r.backendId)
+      .map(r => ({
+        backendId: r.backendId!,
+        reportId: r.id,
+        locationName: r.locationName,
+        waterLevel: r.waterLevel,
+        confirmedAt: r.createdAt + 1,
+        kind: (r.reportedBy === currentUser ? 'own_verified' : 'confirmed') as 'own_verified' | 'confirmed',
+      })),
+    [reports, currentUser]
+  );
+
   const alertReports = useMemo(
     () => reports.filter(r => r.reportedBy !== currentUser),
     [reports, currentUser]
@@ -222,14 +238,14 @@ export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOp
   const allEntries = useMemo((): AlertEntry[] => {
     const entries: AlertEntry[] = [
       ...alertReports.map(r => ({ kind: 'report' as const, report: r, sortKey: r.createdAt })),
-      ...confirmAlerts.map(a => ({ kind: 'confirmed' as const, alert: a, sortKey: a.confirmedAt })),
+      ...verifiedAlerts.map(a => ({ kind: 'confirmed' as const, alert: a, sortKey: a.confirmedAt })),
     ];
     return entries.sort((a, b) => b.sortKey - a.sortKey);
-  }, [alertReports, confirmAlerts]);
+  }, [alertReports, verifiedAlerts]);
 
   const hasUnread =
     alertReports.some(r => !readIds.has(r.id)) ||
-    confirmAlerts.some(a => !readConfirmIds.has(a.backendId));
+    verifiedAlerts.some(a => !readConfirmIds.has(a.backendId));
 
   const markReportRead = (id: number) => {
     setReadIds(prev => {
@@ -261,7 +277,7 @@ export default function AlertsScreen({ reports, confirmAlerts, currentUser, onOp
     });
     setReadConfirmIds(prev => {
       const next = new Set(prev);
-      confirmAlerts.forEach(a => next.add(a.backendId));
+      verifiedAlerts.forEach(a => next.add(a.backendId));
       const key = `floodwatch_read_confirm_${localStorage.getItem('userId') || 'anon'}`;
       localStorage.setItem(key, JSON.stringify(Array.from(next)));
       return next;
