@@ -1253,6 +1253,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               applyConfirmation(selectedReport.id, photos[0]);
               setUserAddedPhoto(true);
               setConfirmStep('confirmed_view');
+              showToast('Your photo was added to the gallery');
             }
           }}
           onBack={() => setShowConfirmCameraCapture(false)}
