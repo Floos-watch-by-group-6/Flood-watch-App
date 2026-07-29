@@ -266,10 +266,11 @@ export default function App() {
     for (const b of backendReports) {
       const existing = knownByBackendId.get(b._id);
       if (!existing) continue;
+      const mergedCount = Math.max(b.confirmations.yes, existing.confirmations);
       updates.set(b._id, {
         ...existing,
-        confirmations: b.confirmations.yes,
-        status: b.confirmations.yes >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
+        confirmations: mergedCount,
+        status: mergedCount >= VERIFICATION_THRESHOLD ? 'Verified' : 'Unverified',
         ...(b.photoUrl ? { imageUrl: b.photoUrl, images: [b.photoUrl] } : {}),
       });
     }
