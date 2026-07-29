@@ -286,6 +286,7 @@ export default function FeedScreen({
           post={selectedPost}
           currentUser={currentUser}
           onBack={() => setSelectedPost(null)}
+          onFindOnMap={selectedPost.coordinates ? () => onFindOnMap(selectedPost.coordinates!) : undefined}
         />
       )}
 

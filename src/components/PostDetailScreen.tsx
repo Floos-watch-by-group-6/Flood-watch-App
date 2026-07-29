@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
+import mapIcon from '../assets/map1.svg';
 import type { FeedPost } from './FeedScreen';
 
 const COMMENTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/comments';
@@ -25,6 +26,7 @@ interface PostDetailScreenProps {
   post: FeedPost;
   currentUser: string;
   onBack: () => void;
+  onFindOnMap?: () => void;
 }
 
 function hashCommentId(id: string): number {
@@ -64,7 +66,7 @@ function severityLabel(level: 'Low' | 'Medium' | 'High'): string {
 const CARD_OUTLINE = '1px solid #EFEFEF';
 const DIVIDER = '#EDEEF0';
 
-export default function PostDetailScreen({ post, currentUser, onBack }: PostDetailScreenProps) {
+export default function PostDetailScreen({ post, currentUser, onBack, onFindOnMap }: PostDetailScreenProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyText, setReplyText] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
@@ -233,6 +235,29 @@ export default function PostDetailScreen({ post, currentUser, onBack }: PostDeta
             <span style={{ fontSize: '14px', fontWeight: 500, color: '#6E6E76' }}>@{post.username}</span>
             <span style={{ fontSize: '13px', color: '#B0B0B8' }}>•</span>
             <span style={{ fontSize: '14px', color: '#9CA0A8' }}>{post.timeAgo}</span>
+            {onFindOnMap && (
+              <button
+                type="button"
+                onClick={onFindOnMap}
+                style={{
+                  marginLeft: 'auto',
+                  display: 'inline-flex',
+                  height: '24px',
+                  padding: '0 12px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '6px',
+                  borderRadius: '47px',
+                  border: '1px solid #EAECEF',
+                  background: '#F6F6F6',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                <img src={mapIcon} alt="" width="14" height="14" />
+                <span style={{ fontSize: '12px', fontWeight: 500, color: '#4B5563', whiteSpace: 'nowrap' }}>Find on Map</span>
+              </button>
+            )}
           </div>
 
           <div style={{ borderTop: `1px solid ${DIVIDER}`, margin: '14px 0' }} />
