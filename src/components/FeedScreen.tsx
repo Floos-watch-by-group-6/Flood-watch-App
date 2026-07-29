@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const COMMENTS_API_URL = 'https://floodwatch-backend-82y3.onrender.com/api/comments';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 import commentIcon from '../assets/comment.svg';
+import mapIcon from '../assets/map1.svg';
 import type { FloodReport } from '../type';
 import PostDetailScreen from './PostDetailScreen';
 import DeletePostMenu from './DeletePostMenu';
@@ -20,6 +21,7 @@ export interface FeedPost {
   images: string[];
   commentCount: number;
   reportedBy?: string;
+  coordinates?: [number, number];
 }
 
 interface FeedScreenProps {
@@ -29,6 +31,7 @@ interface FeedScreenProps {
   handleMainSearchSubmit: (e: React.FormEvent) => void;
   currentUser: string;
   onDeleteReport: (id: number) => void;
+  onFindOnMap: (coordinates: [number, number]) => void;
 }
 
 function timeAgo(createdAt: number): string {
@@ -81,6 +84,7 @@ function toFeedPosts(reports: FloodReport[]): FeedPost[] {
     images: r.images || (r.imageUrl ? [r.imageUrl] : []),
     commentCount: 0,
     reportedBy: r.reportedBy,
+    coordinates: r.coordinates,
   }));
 }
 
@@ -146,6 +150,7 @@ export default function FeedScreen({
   handleMainSearchSubmit,
   currentUser,
   onDeleteReport,
+  onFindOnMap,
 }: FeedScreenProps) {
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [menuPostId, setMenuPostId] = useState<number | null>(null);
@@ -269,6 +274,7 @@ export default function FeedScreen({
               onSelect={() => setSelectedPost(post)}
               isOwnPost={!!post.reportedBy && post.reportedBy === currentUser}
               onOpenMenu={() => setMenuPostId(post.id)}
+              onFindOnMap={post.coordinates ? () => onFindOnMap(post.coordinates!) : undefined}
             />
           ))}
         </div>
@@ -314,11 +320,13 @@ function FeedPostCard({
   onSelect,
   isOwnPost,
   onOpenMenu,
+  onFindOnMap,
 }: {
   post: FeedPost;
   onSelect: () => void;
   isOwnPost: boolean;
   onOpenMenu: () => void;
+  onFindOnMap?: () => void;
 }) {
   const sevColors = severityColors(post.severity);
 
@@ -343,31 +351,49 @@ function FeedPostCard({
           <span style={{ fontSize: '14px', color: '#9CA0A8' }}>{post.timeAgo}</span>
         </div>
 
-        {isOwnPost && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '30px',
-              height: '30px',
-              flexShrink: 0,
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#9CA0A8',
-              padding: 0,
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="12" cy="19" r="2" />
-            </svg>
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+          {onFindOnMap && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onFindOnMap(); }}
+              style={{
+                display: 'inline-flex',
+                height: '24px',
+                padding: '0 12px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '6px',
+                borderRadius: '47px',
+                border: '1px solid #EAECEF',
+                background: '#F6F6F6',
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+            >
+              <img src={mapIcon} alt="" width="14" height="14" />
+              <span style={{ fontSize: '12px', fontWeight: 500, color: '#4B5563', whiteSpace: 'nowrap' }}>Find on Map</span>
+            </button>
+          )}
+
+          {isOwnPost && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenMenu(); }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '30px', height: '30px', flexShrink: 0,
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#9CA0A8', padding: 0,
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="12" cy="19" r="2" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Divider */}

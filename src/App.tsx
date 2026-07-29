@@ -1296,6 +1296,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             setShowReportDeletedToast(true);
             setTimeout(() => setShowReportDeletedToast(false), 4000);
           }}
+          onFindOnMap={(coordinates) => {
+            setCurrentTab('maps');
+            mapRef.current?.flyTo({ center: coordinates, zoom: 16, essential: true });
+          }}
         />
       )}
 
