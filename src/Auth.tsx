@@ -954,7 +954,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
               Enter Verification code
             </p>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
               {resetOtp.map((digit, idx) => (
                 <input
                   key={idx}
@@ -965,7 +965,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   value={digit}
                   onChange={(e) => handleResetOtpChange(idx, e.target.value)}
                   style={{
-                    width: '48px',
+                    flex: 1,
+                    minWidth: 0,
+                    maxWidth: '52px',
                     height: '58px',
                     borderRadius: '14px',
                     border: '1.5px solid #E5E7EB',
@@ -1798,7 +1800,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                   </div>
 
                   {/* 6 Digit Input Boxes */}
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '28px' }}>
                     {otp.map((digit, idx) => (
                       <input
                         key={idx}
@@ -1809,7 +1811,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
                         style={{
-                          width: '48px',
+                          flex: 1,
+                          minWidth: 0,
+                          maxWidth: '52px',
                           height: '58px',
                           borderRadius: '14px',
                           border: '1.5px solid #E5E7EB',
