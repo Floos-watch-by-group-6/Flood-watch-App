@@ -1863,18 +1863,20 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                 </div>
               </div>
 
-              {showCommunityPhotos && (
-                <div style={{ marginBottom: '18px' }}>
-                  <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
-                    {(selectedReport.images || [selectedReport.imageUrl]).map((img, i) => (
-                      <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
-                        <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      </div>
-                    ))}
+              <div style={{ display: 'grid', gridTemplateRows: showCommunityPhotos ? '1fr' : '0fr', transition: 'grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ paddingBottom: '18px', opacity: showCommunityPhotos ? 1 : 0, transition: 'opacity 0.28s ease' }}>
+                    <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                      {(selectedReport.images || [selectedReport.imageUrl]).map((img, i) => (
+                        <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
+                          <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
 
               {confirmStep === 'initial' && (
                 selectedReport.status === 'Verified' ? (
@@ -2216,18 +2218,20 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                 </div>
               </div>
 
-              {showCommunityPhotos && (
-                <div style={{ marginBottom: '18px' }}>
-                  <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
-                    {(viewingOwnReport.images || [viewingOwnReport.imageUrl]).map((img, i) => (
-                      <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
-                        <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      </div>
-                    ))}
+              <div style={{ display: 'grid', gridTemplateRows: showCommunityPhotos ? '1fr' : '0fr', transition: 'grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{ paddingBottom: '18px', opacity: showCommunityPhotos ? 1 : 0, transition: 'opacity 0.28s ease' }}>
+                    <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: '500' }}>Submitted by the community</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '10px' }}>
+                      {(viewingOwnReport.images || [viewingOwnReport.imageUrl]).map((img, i) => (
+                        <div key={i} style={{ aspectRatio: '1 / 1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F3F4F6' }}>
+                          <img src={img} alt="community photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
                 <button
