@@ -445,7 +445,7 @@ export default function App() {
       navigator.geolocation.getCurrentPosition(
         () => setShowNotificationPermissionModal(true),
         () => setShowNotificationPermissionModal(true),
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       setShowNotificationPermissionModal(true);
@@ -595,7 +595,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setDisplayedLocation(placeName);
         },
         (err) => console.error(err),
-        { enableHighAccuracy: true }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
   };
@@ -623,7 +623,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
           setDisplayedLocation(placeName);
           setNewLocationName(placeName);
         },
-        { enableHighAccuracy: true, timeout: 10000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
   }, [isAuthenticated]);
@@ -691,7 +691,9 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
 
     const geolocateControl = new maplibregl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
       },
       trackUserLocation: false,
       showUserLocation: true,
@@ -1442,7 +1444,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       fetchLocationName(c.lng, c.lat).then(setNewLocationName);
                     }
                   },
-                  { enableHighAccuracy: true, timeout: 8000 }
+                  { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
                 );
               } else if (mapRef.current) {
                 const c = mapRef.current.getCenter();
