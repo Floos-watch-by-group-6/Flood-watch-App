@@ -124,7 +124,7 @@ export default function MapControls({ handleRecenterLocation, handleInfoClick }:
       <div
         style={{
           position: 'absolute',
-          right: '46px',
+          right: '16px',
           bottom: '150px',
           zIndex: 10,
           display: 'flex',
