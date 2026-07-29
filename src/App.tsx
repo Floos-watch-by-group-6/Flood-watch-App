@@ -412,6 +412,19 @@ export default function App() {
   const [showCameraCapture, setShowCameraCapture] = useState<boolean>(false);
   const [showConfirmCameraCapture, setShowConfirmCameraCapture] = useState<boolean>(false);
   const [showLocationPermissionModal, setShowLocationPermissionModal] = useState<boolean>(false);
+
+  // Nudge system
+  const verifiedAtRef = useRef<Record<string, number>>(
+    (() => { try { return JSON.parse(localStorage.getItem('floodwatch_verified_at') || '{}'); } catch { return {}; } })()
+  );
+  const [nudgeDismissedIds, setNudgeDismissedIds] = useState<Set<string>>(
+    () => { try { return new Set(JSON.parse(localStorage.getItem('floodwatch_nudge_dismissed') || '[]')); } catch { return new Set(); } }
+  );
+  const nudgeDismissedIdsRef = useRef<Set<string>>(new Set());
+  const reportsRef = useRef<FloodReport[]>([]);
+  const activeNudgeRef = useRef<FloodReport | null>(null);
+  const [activeNudge, setActiveNudge] = useState<FloodReport | null>(null);
+  const [nudgeSecondsLeft, setNudgeSecondsLeft] = useState(120);
   const [showNotificationPermissionModal, setShowNotificationPermissionModal] = useState<boolean>(false);
 
   const requestPhotoAccess = (target: 'report' | 'confirm') => {
@@ -504,6 +517,81 @@ export default function App() {
     if (!currentUser) return;
     localStorage.setItem(`floodwatch_votes_${currentUser}`, JSON.stringify(userVotes));
   }, [userVotes, currentUser]);
+
+  // Keep nudge refs in sync so the interval closure always reads current values
+  useEffect(() => { nudgeDismissedIdsRef.current = nudgeDismissedIds; }, [nudgeDismissedIds]);
+  useEffect(() => { reportsRef.current = reports; }, [reports]);
+  useEffect(() => { activeNudgeRef.current = activeNudge; }, [activeNudge]);
+
+  // Record the first time each report transitions to Verified
+  useEffect(() => {
+    let changed = false;
+    for (const r of reports) {
+      if (r.status === 'Verified' && r.backendId && !verifiedAtRef.current[r.backendId]) {
+        verifiedAtRef.current[r.backendId] = Date.now();
+        changed = true;
+      }
+    }
+    if (changed) localStorage.setItem('floodwatch_verified_at', JSON.stringify(verifiedAtRef.current));
+  }, [reports]);
+
+  // Auto-dismiss nudge when countdown reaches zero
+  useEffect(() => {
+    if (nudgeSecondsLeft === 0 && activeNudge?.backendId) {
+      const id = activeNudge.backendId;
+      setNudgeDismissedIds(prev => {
+        const next = new Set(prev);
+        next.add(id);
+        localStorage.setItem('floodwatch_nudge_dismissed', JSON.stringify([...next]));
+        return next;
+      });
+      setActiveNudge(null);
+      setNudgeSecondsLeft(120);
+    }
+  }, [nudgeSecondsLeft, activeNudge]);
+
+  // Countdown ticker + nudge trigger
+  useEffect(() => {
+    const NUDGE_DELAY_MS = 5 * 60 * 1000;
+    const tick = setInterval(() => {
+      if (activeNudgeRef.current) {
+        setNudgeSecondsLeft(prev => Math.max(0, prev - 1));
+      } else {
+        const now = Date.now();
+        const next = reportsRef.current.find(r =>
+          r.status === 'Verified' &&
+          r.backendId &&
+          !nudgeDismissedIdsRef.current.has(r.backendId) &&
+          verifiedAtRef.current[r.backendId] !== undefined &&
+          now - verifiedAtRef.current[r.backendId] >= NUDGE_DELAY_MS
+        );
+        if (next) {
+          setActiveNudge(next);
+          setNudgeSecondsLeft(120);
+        }
+      }
+    }, 1000);
+    return () => clearInterval(tick);
+  }, []);
+
+  const dismissNudge = (backendId: string) => {
+    setNudgeDismissedIds(prev => {
+      const next = new Set(prev);
+      next.add(backendId);
+      localStorage.setItem('floodwatch_nudge_dismissed', JSON.stringify([...next]));
+      return next;
+    });
+    setActiveNudge(null);
+    setNudgeSecondsLeft(120);
+  };
+
+  const haversineKm = (a: [number, number], b: [number, number]) => {
+    const R = 6371;
+    const dLat = (b[1] - a[1]) * Math.PI / 180;
+    const dLon = (b[0] - a[0]) * Math.PI / 180;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(a[1] * Math.PI / 180) * Math.cos(b[1] * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+  };
 
   // If the app sits backgrounded (tab hidden, browser minimized) for more
   // than BACKGROUND_LOGOUT_MS, require signing in again on return instead of
@@ -1563,6 +1651,96 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             </button>
           </div>
         )}
+
+        {/* Flood status nudge card */}
+        {activeNudge && (() => {
+          const mins = Math.floor(nudgeSecondsLeft / 60);
+          const secs = nudgeSecondsLeft % 60;
+          const nearby = currentCoords ? haversineKm(currentCoords, activeNudge.coordinates) <= 2 : false;
+          return (
+            <div style={{ position: 'absolute', top: '60px', left: '50%', transform: 'translateX(-50%)', zIndex: 3500 }}>
+              {/* dismiss × sits on top-right corner of the card */}
+              <button
+                onClick={() => dismissNudge(activeNudge.backendId!)}
+                style={{
+                  position: 'absolute', top: '-7px', right: '-7px',
+                  width: '17px', height: '17px', borderRadius: '50%',
+                  backgroundColor: '#1C1C1E', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', zIndex: 1, padding: 0,
+                }}
+              >
+                <svg width="7" height="7" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              <div style={{
+                width: '211px',
+                height: '43.006px',
+                borderRadius: '16.127px',
+                backgroundColor: '#FFF',
+                boxShadow: '0 16.799px 4.704px 0 rgba(28,28,28,0.00), 0 10.752px 4.032px 0 rgba(28,28,28,0.01), 0 6.048px 3.36px 0 rgba(28,28,28,0.05), 0 2.688px 2.688px 0 rgba(28,28,28,0.09), 0 0.672px 1.344px 0 rgba(28,28,28,0.10)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 10px',
+                gap: '7px',
+                animation: 'reportToastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+              }}>
+                {/* Timer icon */}
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M8.3995 1.12012H5.59961" stroke="#5E839A" strokeWidth="1.00796" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M1.67969 12.3194H6.99949C9.62826 12.3194 11.7593 10.1884 11.7593 7.55962C11.7593 6.24524 11.2265 5.05528 10.3652 4.19392C9.50383 3.33257 8.31387 2.7998 6.99949 2.7998C4.37071 2.7998 2.23967 4.93085 2.23967 7.55962M10.3652 4.19392L11.1993 3.35978" stroke="#5E839A" strokeWidth="1.00796" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4.47958 10.6396H1.67969" stroke="#5E839A" strokeWidth="1.00796" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M3.35962 8.95898H1.67969" stroke="#5E839A" strokeWidth="1.00796" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6.99902 7.55954L8.95895 5.59961" stroke="#5E839A" strokeWidth="1.00796" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#1C1C1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.2 }}>
+                    Has {activeNudge.locationName} cleared?
+                  </div>
+                  <div style={{ fontSize: '9px', color: '#8E8E93', marginTop: '2px', whiteSpace: 'nowrap', lineHeight: 1 }}>
+                    {nearby ? "You're nearby · " : ""}resolves in {mins}m {String(secs).padStart(2, '0')}s
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                  {/* × = dismiss / report cleared */}
+                  <button
+                    onClick={() => dismissNudge(activeNudge.backendId!)}
+                    style={{
+                      width: '23px', height: '23px', borderRadius: '50%',
+                      backgroundColor: '#FEE2E2', border: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', padding: 0, flexShrink: 0,
+                    }}
+                  >
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                  {/* ✓ = still flooded */}
+                  <button
+                    onClick={() => dismissNudge(activeNudge.backendId!)}
+                    style={{
+                      width: '23px', height: '23px', borderRadius: '50%',
+                      backgroundColor: '#D1FAE5', border: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', padding: 0, flexShrink: 0,
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                      <path d="M2.24023 6.27198L3.80818 7.83992L8.512 2.91211" stroke="#4CA793" strokeWidth="0.671975" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Report Posted Notification */}
         {showReportPostedToast && (
