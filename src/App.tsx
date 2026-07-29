@@ -1879,69 +1879,19 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
               </div>
 
               {confirmStep === 'initial' && (
-                selectedReport.status === 'Verified' ? (
-                  <>
-                    <div style={{ marginBottom: '18px' }}>
-                      <h4 style={{ margin: '0 0 6px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
-                        What people are reporting
-                      </h4>
-                      <p style={{ margin: 0, fontSize: '14px', color: '#9CA3AF', lineHeight: '1.5' }}>
-                        "{selectedReport.description || 'No community reports yet.'}"
-                      </p>
-                    </div>
+                <>
+                  <div style={{ marginBottom: '18px' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                      What people are reporting
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#9CA3AF', lineHeight: '1.6' }}>
+                      "{selectedReport.description || 'No description provided.'}"
+                    </p>
+                  </div>
 
-                    <div style={{ textAlign: 'center' }}>
-                      <p style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
-                        Is this still accurate?
-                      </p>
-
-                      {canVoteOnReport(selectedReport) ? (
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <button
-                            onClick={() => handleDeclineTap(selectedReport)}
-                            style={{
-                              flex: 1,
-                              padding: '14px',
-                              borderRadius: '50px',
-                              backgroundColor: userVotes[selectedReport.id] === 'no' ? '#E5E7EB' : '#F3F4F6',
-                              border: 'none',
-                              color: '#111827',
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            No, it's cleared
-                          </button>
-
-                          <button
-                            onClick={() => handleConfirmTap(selectedReport)}
-                            style={{
-                              flex: 1,
-                              padding: '14px',
-                              borderRadius: '50px',
-                              backgroundColor: '#003366',
-                              border: 'none',
-                              color: '#FFFFFF',
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Yes, still flooded
-                          </button>
-                        </div>
-                      ) : (
-                        <p style={{ margin: 0, fontSize: '13px', color: '#9CA3AF', backgroundColor: '#F3F4F6', borderRadius: '14px', padding: '14px' }}>
-                          {lockedVoteReason(selectedReport)}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ margin: '0 0 12px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
-                      Can you confirm this?
+                  <div>
+                    <p style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: '700', color: '#111827' }}>
+                      Is this still accurate?
                     </p>
 
                     {canVoteOnReport(selectedReport) ? (
@@ -1950,34 +1900,34 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                           onClick={() => handleDeclineTap(selectedReport)}
                           style={{
                             flex: 1,
-                            padding: '14px',
+                            padding: '15px',
                             borderRadius: '50px',
                             backgroundColor: userVotes[selectedReport.id] === 'no' ? '#E5E7EB' : '#F3F4F6',
                             border: 'none',
                             color: '#111827',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
-                          No, looks clear
+                          No, it's cleared
                         </button>
 
                         <button
                           onClick={() => handleConfirmTap(selectedReport)}
                           style={{
                             flex: 1,
-                            padding: '14px',
+                            padding: '15px',
                             borderRadius: '50px',
-                            backgroundColor: '#003366',
+                            backgroundColor: userVotes[selectedReport.id] === 'yes' ? '#002244' : '#003366',
                             border: 'none',
                             color: '#FFFFFF',
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                           }}
                         >
-                          Yes, I see it too
+                          Yes, still flooded
                         </button>
                       </div>
                     ) : (
@@ -1986,7 +1936,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
                       </p>
                     )}
                   </div>
-                )
+                </>
               )}
 
               {confirmStep === 'add_photo' && (
