@@ -266,7 +266,7 @@ export default function App() {
     for (const b of backendReports) {
       const existing = knownByBackendId.get(b._id);
       if (!existing) continue;
-      const mergedCount = Math.max(b.confirmations.yes, existing.confirmations);
+      const mergedCount = Math.min(Math.max(b.confirmations.yes, existing.confirmations), VERIFICATION_THRESHOLD);
       updates.set(b._id, {
         ...existing,
         confirmations: mergedCount,
