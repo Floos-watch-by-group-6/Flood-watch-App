@@ -1770,7 +1770,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                       )}
                     </div>
                     <span style={{ fontSize: '15px', fontWeight: '700', color: '#091b29', lineHeight: '1.4' }}>
-                      By creating an account, you agree to our Term of service and privacy policy
+                      By creating an account, you agree to our{' '}
+                      <a href="#" style={{ color: '#1D6AFF', textDecoration: 'underline' }}>Terms of Service</a>
+                      {' '}and{' '}
+                      <a href="https://docs.google.com/document/d/1JTh3F8DbRYVBu_I958ZzP9rcPxHsOtZc0onDVfuoba4/edit?usp=sharing" target="_blank" rel="noopener noreferrer" style={{ color: '#1D6AFF', textDecoration: 'underline' }}>Privacy Policy</a>
                     </span>
                   </label>
 
