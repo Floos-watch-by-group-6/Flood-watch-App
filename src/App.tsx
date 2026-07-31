@@ -259,7 +259,11 @@ export default function App() {
   // Merge a batch of backend reports into local state: refresh confirmation
   // counts on ones we already know, reverse-geocode and add the new ones.
   // Shared by the periodic global poll and by location-scoped searches.
-  const mergeBackendReports = async (backendReports: BackendReport[]) => {
+  // Grace window: don't prune a freshly-created report if a poll momentarily
+  // races ahead of the backend having it indexed.
+  const PRUNE_GRACE_MS = 15000;
+
+  const mergeBackendReports = async (backendReports: BackendReport[], prune = false) => {
     const knownByBackendId = new Map(
       reportsRef.current.filter(r => r.backendId).map(r => [r.backendId as string, r])
     );
@@ -312,10 +316,29 @@ export default function App() {
       })
     );
 
-    if (updates.size === 0 && added.length === 0) return;
+    if (updates.size === 0 && added.length === 0 && !prune) return;
     setReports(prev => {
-      const withUpdates = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
-      return added.length > 0 ? [...withUpdates, ...added] : withUpdates;
+      let changed = updates.size > 0 || added.length > 0;
+      let next = prev.map(r => (r.backendId && updates.has(r.backendId) ? updates.get(r.backendId)! : r));
+
+      // Prune reports that were deleted on the backend so they disappear for
+      // every user. Only runs on the full global poll — a location-scoped
+      // search returns a partial list and must not wipe out reports elsewhere.
+      if (prune) {
+        const backendIdSet = new Set(backendReports.map(b => b._id));
+        const now = Date.now();
+        const filtered = next.filter(r => {
+          if (!r.backendId) return true;                       // never-synced local report
+          if (backendIdSet.has(r.backendId)) return true;      // still on the backend
+          if (now - r.createdAt < PRUNE_GRACE_MS) return true; // just created, avoid flicker
+          return false;                                        // deleted on the backend
+        });
+        if (filtered.length !== next.length) changed = true;
+        next = filtered;
+      }
+
+      if (added.length > 0) next = [...next, ...added];
+      return changed ? next : prev;
     });
   };
 
@@ -346,7 +369,7 @@ export default function App() {
         if (!res.ok || cancelled) return;
         const backendReports: BackendReport[] = await res.json();
         if (cancelled) return;
-        await mergeBackendReports(backendReports);
+        await mergeBackendReports(backendReports, true);
       } catch (error) {
         console.error('Failed to fetch community reports:', error);
       }
@@ -1178,8 +1201,19 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
   const handleDeleteOwnReport = () => {
     if (!viewingOwnReport) return;
     if (window.confirm(`Delete your report for ${viewingOwnReport.locationName}? This can't be undone.`)) {
+      // Remove from the shared backend so it disappears for every user, not
+      // just this device. Purely-local reports have no backendId to delete.
+      if (viewingOwnReport.backendId) {
+        const token = localStorage.getItem('token');
+        fetch(`${REPORTS_API_URL}/${viewingOwnReport.backendId}`, {
+          method: 'DELETE',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }).catch(() => {});
+      }
       setReports(prev => prev.filter(r => r.id !== viewingOwnReport.id));
       setViewingOwnReport(null);
+      setShowReportDeletedToast(true);
+      setTimeout(() => setShowReportDeletedToast(false), 4000);
     }
   };
 
