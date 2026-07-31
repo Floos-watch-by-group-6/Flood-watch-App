@@ -53,6 +53,7 @@ export default function Auth({ onAuthComplete }: AuthProps) {
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
   const [resetPasswordError, setResetPasswordError] = useState('');
   const [showResetSuccessModal, setShowResetSuccessModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   // Sequenced splash animation: icon alone -> divider grows in -> wordmark fades in -> hand off to sign in
   useEffect(() => {
@@ -1319,6 +1320,69 @@ export default function Auth({ onAuthComplete }: AuthProps) {
           </div>
         )}
 
+        {/* Terms of Service full-screen modal */}
+        {showTermsModal && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            zIndex: 50,
+          }}>
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '16px 20px',
+              borderBottom: '1px solid #F0F0F0',
+              flexShrink: 0,
+            }}>
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(false)}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: '#F2F4F6',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 18l-6-6 6-6" stroke="#091b29" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <h2 style={{
+                flex: 1,
+                textAlign: 'center',
+                fontSize: '17px',
+                fontWeight: '700',
+                color: '#091b29',
+                margin: '0',
+                marginRight: '36px',
+              }}>
+                Terms of Service
+              </h2>
+            </div>
+            {/* Iframe content */}
+            <iframe
+              src="https://docs.google.com/document/d/1JTh3F8DbRYVBu_I958ZzP9rcPxHsOtZc0onDVfuoba4/preview"
+              style={{
+                flex: 1,
+                border: 'none',
+                width: '100%',
+              }}
+              title="Terms of Service"
+            />
+          </div>
+        )}
+
         {/* ----------------- 4. PROGRESSIVE CREATE ACCOUNT FLOW (FIGMA EXACT MATCH) ----------------- */}
         {step === 'signup' && (
           <div style={{
@@ -1771,9 +1835,13 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                     </div>
                     <span style={{ fontSize: '15px', fontWeight: '700', color: '#091b29', lineHeight: '1.4' }}>
                       By creating an account, you agree to our{' '}
-                      <a href="#" style={{ color: '#1D6AFF', textDecoration: 'underline' }}>Terms of Service</a>
+                      <a
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }}
+                        style={{ color: '#1D6AFF', textDecoration: 'underline' }}
+                      >Terms of Service</a>
                       {' '}and{' '}
-                      <a href="https://docs.google.com/document/d/1JTh3F8DbRYVBu_I958ZzP9rcPxHsOtZc0onDVfuoba4/edit?usp=sharing" target="_blank" rel="noopener noreferrer" style={{ color: '#1D6AFF', textDecoration: 'underline' }}>Privacy Policy</a>
+                      <a href="#" style={{ color: '#1D6AFF', textDecoration: 'underline' }}>Privacy Policy</a>
                     </span>
                   </label>
 
