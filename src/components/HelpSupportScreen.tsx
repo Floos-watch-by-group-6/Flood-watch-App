@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import floodwatchLogo from '../assets/Floodwatchlogo.svg';
 
 interface HelpSupportScreenProps {
@@ -5,10 +6,22 @@ interface HelpSupportScreenProps {
 }
 
 const FAQS = [
-  'How does report verification work?',
-  'Why do I need to use my camera?',
-  'Is my identity visible to others?',
-  'What happens if a report is wrong?',
+  {
+    q: 'How does report verification work?',
+    a: 'When 3 different users confirm a report, it becomes Verified. This keeps flood information trustworthy.',
+  },
+  {
+    q: 'Why do I need to use my camera?',
+    a: 'Live photos keep reports genuine and up to date, so gallery uploads are turned off.',
+  },
+  {
+    q: 'Is my identity visible to others?',
+    a: 'No. Reports show a handle, not your real name or contact details.',
+  },
+  {
+    q: 'What happens if a report is wrong?',
+    a: 'Reports left unconfirmed or marked cleared are automatically removed over time.',
+  },
 ];
 
 function WatermarkLayer() {
@@ -31,6 +44,8 @@ function WatermarkLayer() {
 }
 
 export default function HelpSupportScreen({ onBack }: HelpSupportScreenProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   return (
     <div style={{
       position: 'absolute',
@@ -65,33 +80,72 @@ export default function HelpSupportScreen({ onBack }: HelpSupportScreenProps) {
       </div>
 
       <div style={{ position: 'relative', borderTop: '1px solid #E5E7EB' }}>
-        <div style={{ padding: '24px 18px 0 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {FAQS.map((q) => (
-            <button
-              key={q}
-              type="button"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '12px',
-                width: '100%',
-                backgroundColor: '#FFFFFF',
-                border: 'none',
-                borderRadius: '18px',
-                padding: '20px 20px',
-                boxShadow: '0px 6px 18px rgba(17, 24, 39, 0.05)',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>{q}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M9 6l6 6-6 6" stroke="#C4C9D1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          ))}
+        <div style={{ padding: '24px 18px 24px 18px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {FAQS.map((faq, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div
+                key={faq.q}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '18px',
+                  boxShadow: '0px 6px 18px rgba(17, 24, 39, 0.05)',
+                  overflow: 'hidden',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    padding: '20px 20px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#262537' }}>{faq.q}</span>
+                  <svg
+                    width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    style={{
+                      flexShrink: 0,
+                      transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.25s ease',
+                    }}
+                  >
+                    <path d="M9 6l6 6-6 6" stroke="#C4C9D1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateRows: isOpen ? '1fr' : '0fr',
+                    transition: 'grid-template-rows 0.28s ease',
+                  }}
+                >
+                  <div style={{ overflow: 'hidden' }}>
+                    <p style={{
+                      margin: 0,
+                      padding: '0 20px 20px 20px',
+                      fontSize: '13.5px',
+                      lineHeight: 1.55,
+                      color: '#6B7280',
+                    }}>
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
