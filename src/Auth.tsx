@@ -168,10 +168,10 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto focus next input box
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
-      nextInput?.focus();
+      document.getElementById(`otp-input-${index + 1}`)?.focus();
+    } else if (!value && index > 0) {
+      document.getElementById(`otp-input-${index - 1}`)?.focus();
     }
   };
 
@@ -287,8 +287,9 @@ export default function Auth({ onAuthComplete }: AuthProps) {
     setResetOtp(next);
 
     if (value && index < 5) {
-      const nextInput = document.getElementById(`reset-otp-input-${index + 1}`);
-      nextInput?.focus();
+      document.getElementById(`reset-otp-input-${index + 1}`)?.focus();
+    } else if (!value && index > 0) {
+      document.getElementById(`reset-otp-input-${index - 1}`)?.focus();
     }
   };
 
