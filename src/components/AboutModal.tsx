@@ -114,7 +114,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           <p style={{ fontSize: '15px', color: '#4B5563', lineHeight: '1.5', margin: '0 0 20px 0' }}>
             For more info at{' '}
             <a
-              href="https://www.floodwatch.com"
+              href="https://flood-watch-landing-page.vercel.app/"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: '#2563EB', textDecoration: 'underline' }}
