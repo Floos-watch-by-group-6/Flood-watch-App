@@ -1,3 +1,5 @@
+import floodHero from '../assets/about-hero.jpg';
+
 interface AboutModalProps {
   onClose: () => void;
 }
@@ -43,9 +45,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
           style={{
             position: 'relative',
             height: '200px',
-            /* Placeholder — swap for the flood hero photo once provided */
             backgroundColor: '#6b7d86',
-            backgroundImage: 'linear-gradient(160deg, #8fa3ac 0%, #6b7d86 45%, #4a5b64 100%)',
+            backgroundImage: `linear-gradient(180deg, rgba(9,27,41,0.12) 0%, rgba(9,27,41,0.28) 100%), url(${floodHero})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
