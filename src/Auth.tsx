@@ -1370,16 +1370,95 @@ export default function Auth({ onAuthComplete }: AuthProps) {
                 Terms of Service
               </h2>
             </div>
-            {/* Iframe content */}
-            <iframe
-              src="https://docs.google.com/document/d/1JTh3F8DbRYVBu_I958ZzP9rcPxHsOtZc0onDVfuoba4/preview"
-              style={{
-                flex: 1,
-                border: 'none',
-                width: '100%',
-              }}
-              title="Terms of Service"
-            />
+            {/* Scrollable terms content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 40px 24px' }}>
+              <p style={{ fontSize: '13px', color: '#6B7280', margin: '0 0 4px 0' }}>Effective Date: July 31st 2026</p>
+              <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: '0 0 20px 0' }}>
+                Welcome to FloodWatch. These Terms of Use form a legally binding agreement between you and FloodWatch. They explain the rules that apply when you access or use the FloodWatch platform — a community-powered flood intelligence tool designed to help people make safer travel decisions through real-time community reporting, weather intelligence, and location-based verification.
+              </p>
+              <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: '0 0 20px 0' }}>
+                By creating an account, accessing, or using FloodWatch, you confirm that you have read, understood, and agreed to these Terms. We may update these Terms from time to time and will notify users of significant changes through the platform or by email.
+              </p>
+
+              {[
+                {
+                  title: '1. Who Can Use FloodWatch',
+                  body: 'To use FloodWatch, you must be at least 18 years old (or have parental permission), be legally capable of entering a binding agreement, register with accurate information, and use the platform only for lawful purposes. FloodWatch is intended for individuals seeking reliable flood information and community members who wish to contribute accurate flood reports.'
+                },
+                {
+                  title: '2. Creating Your Account',
+                  body: 'When registering, you agree to provide a valid email address and accurate information, and to keep your details up to date. You are responsible for keeping your login credentials confidential. If you believe your account has been accessed without permission, change your password immediately. You remain responsible for all activity carried out through your account.'
+                },
+                {
+                  title: '3. Using FloodWatch',
+                  body: 'You may use FloodWatch to view and submit flood reports, search for flood information in different locations, verify reports, receive weather alerts, and access other platform features. Information provided through FloodWatch is intended to support better decision-making — it does not replace official emergency warnings or instructions from government agencies. Always exercise personal judgement before travelling in severe weather.'
+                },
+                {
+                  title: '4. Community Responsibility',
+                  body: 'FloodWatch relies on the honesty and cooperation of its community. Every report and verification contributes to information others may rely on. You are expected to act honestly, respect other members, contribute in good faith, and avoid actions that reduce the reliability of the platform.'
+                },
+                {
+                  title: '5. Reporting Flood Incidents',
+                  body: 'When submitting a report, you agree it is based on a condition you have personally observed, the location is accurate to the best of your knowledge, the danger level reflects actual severity, any description is truthful, and any media you upload belongs to you. False, misleading, or exaggerated reports are prohibited. Repeated false reporting may result in account restrictions or permanent removal.'
+                },
+                {
+                  title: '6. Community Verification',
+                  body: 'If you choose to verify a report, you agree to respond honestly based on your own knowledge or observation, and to only verify reports for locations you are familiar with. You cannot verify your own reports, and you may only verify a particular report once. Attempts to manipulate verification results are prohibited. FloodWatch reserves the right to disregard verification responses that appear fraudulent or coordinated.'
+                },
+                {
+                  title: '7. Automatic Report Management',
+                  body: 'Flood conditions change quickly. To keep information current, FloodWatch automatically manages report lifecycles — reports may receive additional verification requests, be updated, marked as resolved, or removed once no longer considered active or reliable. Automatic updates do not guarantee every condition is reflected immediately.'
+                },
+                {
+                  title: '8. Your Content',
+                  body: 'Any information, photographs, or other materials you submit remain yours. By submitting content, you grant FloodWatch permission to display, store, and process it for the purpose of operating and improving the platform.'
+                },
+                {
+                  title: '9. Acceptable Use',
+                  body: 'You agree not to submit false or misleading reports, manipulate the verification system, create multiple accounts, upload offensive or unlawful content, harass other users, infringe intellectual property rights, introduce harmful code, attempt unauthorised access, or use automated tools to collect data without permission.'
+                },
+                {
+                  title: '10. Respecting Other Users',
+                  body: 'FloodWatch is built on trust. You agree to treat other users with respect. Disagreements about flood conditions should be handled through the verification system, not abusive or disruptive behaviour. We reserve the right to remove content or restrict accounts that violate these standards.'
+                },
+                {
+                  title: '11. Privacy',
+                  body: 'We collect only the information necessary to provide and improve our services — such as location (when you choose to share it), verification responses, and reports you submit. We are committed to protecting your personal information, safeguarding your data against unauthorised access, and not selling or disclosing it to third parties.'
+                },
+                {
+                  title: '12. Service Availability',
+                  body: 'We work hard to keep FloodWatch available and up to date, but cannot guarantee uninterrupted service. We may perform maintenance, introduce features, or temporarily suspend parts of the service. We will make reasonable efforts to minimise disruption.'
+                },
+                {
+                  title: '13. Disclaimer',
+                  body: 'FloodWatch provides community-powered flood information to support safer travel decisions. Although we strive for accuracy, flood conditions can change rapidly and we cannot guarantee every report is complete or current at all times. FloodWatch should be used as an informational tool — not as a substitute for official emergency warnings, government advisories, or your own judgement.'
+                },
+                {
+                  title: '14. Limitation of Liability',
+                  body: 'To the fullest extent permitted by law, FloodWatch and its team shall not be liable for any direct, indirect, incidental, or consequential loss, damage, or injury arising from your use of the platform or reliance on information available through it. All travel decisions remain your own responsibility.'
+                },
+                {
+                  title: '15. Changes to These Terms',
+                  body: 'As FloodWatch grows, we may update these Terms. Where changes are significant, we will notify users through the platform or by email. Your continued use of FloodWatch after updated Terms take effect means you accept the revised Terms.'
+                },
+              ].map(({ title, body }) => (
+                <div key={title} style={{ marginBottom: '20px' }}>
+                  <p style={{ fontSize: '14px', fontWeight: '700', color: '#091b29', margin: '0 0 6px 0' }}>{title}</p>
+                  <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: 0 }}>{body}</p>
+                </div>
+              ))}
+
+              <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #F0F0F0' }}>
+                <p style={{ fontSize: '14px', fontWeight: '700', color: '#091b29', margin: '0 0 6px 0' }}>Acknowledgement</p>
+                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: '0 0 16px 0' }}>
+                  By creating a FloodWatch account or using any part of the platform, you confirm that you have read, understood, and agreed to these Terms of Use.
+                </p>
+                <p style={{ fontSize: '14px', color: '#374151', lineHeight: '1.65', margin: 0, fontWeight: '600' }}>
+                  Thank you for helping us build a safer, more informed community.
+                </p>
+                <p style={{ fontSize: '14px', color: '#6B7280', margin: '4px 0 0 0' }}>The FloodWatch Team</p>
+              </div>
+            </div>
           </div>
         )}
 
