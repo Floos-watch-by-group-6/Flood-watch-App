@@ -13,7 +13,7 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         inset: 0,
         backgroundColor: 'rgba(9, 27, 41, 0.45)',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'center',
         padding: '16px',
         zIndex: 60,
@@ -32,7 +32,8 @@ export default function AboutModal({ onClose }: AboutModalProps) {
         style={{
           width: '100%',
           maxWidth: '360px',
-          marginTop: '8px',
+          maxHeight: '90%',
+          overflowY: 'auto',
           backgroundColor: '#FFFFFF',
           borderRadius: '24px',
           overflow: 'hidden',
