@@ -24,6 +24,7 @@ import PrivacySecurityScreen from './components/PrivacySecurityScreen';
 import ChangePasswordScreen from './components/ChangePasswordScreen';
 import DeleteAccountModal from './components/DeleteAccountModal';
 import LogoutModal from './components/LogoutModal';
+import AboutModal from './components/AboutModal';
 import WeatherModal from './components/WeatherModal';
 import type { ConditionData } from './components/WeatherModal';
 import { fetchWeather } from './lib/weather';
@@ -227,6 +228,7 @@ export default function App() {
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState<boolean>(false);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
   const [showWeatherModal, setShowWeatherModal] = useState<boolean>(false);
+  const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
   const [weatherData, setWeatherData] = useState<ConditionData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
 
@@ -1241,6 +1243,10 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
         />
       )}
 
+      {showAboutModal && (
+        <AboutModal onClose={() => setShowAboutModal(false)} />
+      )}
+
       {showCameraCapture && (
         <CameraCaptureScreen
           maxPhotos={2}
@@ -1452,6 +1458,7 @@ const fetchLocationName = async (lng: number, lat: number): Promise<string> => {
             handleMainSearchSubmit={handleMainSearchSubmit} displayedLocation={displayedLocation}
             mainSearchQuery={mainSearchQuery} setMainSearchQuery={setMainSearchQuery} currentUser={currentUser} getUserInitials={getUserInitials}
             onOpenWeather={handleOpenWeather}
+            onOpenAbout={() => setShowAboutModal(true)}
           />
         )}
 

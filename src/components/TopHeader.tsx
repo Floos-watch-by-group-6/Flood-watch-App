@@ -19,6 +19,7 @@ interface TopHeaderProps {
   currentUser: string;
   getUserInitials: (name: string) => string;
   onOpenWeather: () => void;
+  onOpenAbout: () => void;
 }
 
 export default function TopHeader({
@@ -33,6 +34,7 @@ export default function TopHeader({
   mainSearchQuery,
   setMainSearchQuery,
   onOpenWeather,
+  onOpenAbout,
 //   currentUser,
 //   getUserInitials
 }: TopHeaderProps) {
@@ -80,12 +82,15 @@ export default function TopHeader({
           </svg>
         </button>
       ) : (
-        <div 
+        <button
+          type="button"
+          onClick={onOpenAbout}
           style={{
             width: '40px',
             height: '40px',
             borderRadius: '50%',
             backgroundColor: '#fafafb',
+            border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -93,11 +98,13 @@ export default function TopHeader({
             color: '#FFFFFF',
             fontSize: '14px',
             fontWeight: 'bold',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            cursor: 'pointer',
+            padding: 0
           }}
         >
-         <img src={floodwatchLogo} alt="" width={24} height={24} />
-        </div>
+         <img src={floodwatchLogo} alt="About FloodWatch" width={24} height={24} />
+        </button>
       )}
 
       <form 
