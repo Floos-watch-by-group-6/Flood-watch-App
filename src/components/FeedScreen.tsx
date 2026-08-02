@@ -228,40 +228,12 @@ export default function FeedScreen({
               />
             </div>
 
-            {/* Search Bar — fills the remaining width, vertically centered with the logo */}
-            <form onSubmit={handleMainSearchSubmit} style={{ flex: 1 }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                backgroundColor: '#FFFFFF',
-                borderRadius: '999px',
-                padding: '14px 18px',
-                boxShadow: '0px 6px 16px rgba(17, 24, 39, 0.06)',
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2430" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="7.5" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search a street or area"
-                  value={mainSearchQuery}
-                  onChange={(e) => setMainSearchQuery(e.target.value)}
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    outline: 'none',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    color: '#1F2430',
-                    flex: 1,
-                    fontFamily: 'inherit',
-                    minWidth: 0,
-                  }}
-                />
-              </div>
-            </form>
+            {/* Feed title — centered between the logo and a matching spacer */}
+            <h1 style={{ flex: 1, margin: 0, fontSize: '20px', fontWeight: '600', color: '#111827', textAlign: 'center' }}>
+              Feed
+            </h1>
+            {/* Spacer matching the logo width so the title stays centered */}
+            <div style={{ width: '33px', flexShrink: 0 }} />
           </div>
         </div>
 
